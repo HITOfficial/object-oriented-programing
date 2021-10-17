@@ -1,27 +1,39 @@
 public class World {
     public static void main(String[] args) {
         System.out.println("start");
-        run(args);
-        System.out.println("stop");
-    }
-    public static void run(String[] args){
-        for(String arg : args){
-            switch (arg) {
+        Direction[] moves = new Direction[args.length];
+        for (int i = 0; i < args.length; i++) {
+            switch (args[i]) {
                 case "f":
-                    System.out.println("FORWARD");
+                    moves[i] = Direction.FORWARD;
                     break;
                 case "b":
-                    System.out.println("BACKWARD");
-                break;
-                case "l":
-                    System.out.println("RIGHT");
-                break;
-                case "r":
-                    System.out.println("LEFT");
-                break;
-                default:
+                    moves[i] = Direction.BACKWARD;
                     break;
+                case "l":
+                    moves[i] = Direction.LEFT;
+                    break;
+                case "r":
+                    moves[i] = Direction.RIGHT;
+                    break;
+                default:
+                    throw new IllegalStateException("bad arg");
             }
+        }
+        run(moves);
+        System.out.println("stop");
+    }
+
+    public enum Direction {
+        FORWARD,
+        BACKWARD,
+        RIGHT,
+        LEFT
+    }
+
+    public static void run(Direction[] moves) {
+        for (Direction move : moves) {
+            System.out.println(move);
         }
     }
 }

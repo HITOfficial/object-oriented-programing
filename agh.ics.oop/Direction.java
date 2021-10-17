@@ -1,4 +1,6 @@
-enum Direction {
+package  Direction;
+
+public Direction {
     FORWARD,
     BACKWARD,
     RIGHT,
