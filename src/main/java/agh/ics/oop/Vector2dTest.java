@@ -1,25 +1,50 @@
 package agh.ics.oop;
 
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 public class Vector2dTest {
-    public final Vector2d position1;
-    public final Vector2d position2;
-    public Vector2dTest(Vector2d position1, Vector2d position2) {
-        this.position1 = position1;
-        this.position2 = position2;
+    public Vector2d position1 = new Vector2d(1, 2);
+    public Vector2d position2 = new Vector2d(-2, 1);
+
+    @Test
+    public void textEquals() {
+        assertEquals(false, position1.equals(position2));
     }
 
     @Test
-    public void runVector2dTest() {
-        System.out.println(position1.equals(position2));
-        System.out.println(position1.toString());
-        System.out.println(position1.precedes(position2));
-        System.out.println(position1.follows(position2));
-        System.out.println(position1.upperRight(position2));
-        System.out.println(position1.lowerLeft(position2));
-        System.out.println(position1.add(position2));
-        System.out.println(position1.subtrack(position2));
-        System.out.println(position1.opposite());
+    public void testPrecedes() {
+        assertEquals(false, position1.precedes(position2));
     }
+
+    @Test
+    public void testFollows() {
+        assertEquals(true, position1.follows(position2));
+    }
+
+    @Test
+    public void testUpperRight() {
+        assertEquals(new Vector2d(1, 2), position1.upperRight(position2));
+    }
+
+    @Test
+    public void testLowerLeft() {
+        assertEquals(new Vector2d(-2, 1), position1.lowerLeft(position2));
+    }
+
+    @Test
+    public void testAdd() {
+        assertEquals(new Vector2d(-1, 3), position1.add(position2));
+    }
+
+    @Test
+    public void testSubtrack() {
+        assertEquals(new Vector2d(3, 1), position1.subtrack(position2));
+    }
+
+    @Test
+    public void testOpposite() {
+        assertEquals(new Vector2d(-1, -2), position1.opposite());
+    }
+
 }
