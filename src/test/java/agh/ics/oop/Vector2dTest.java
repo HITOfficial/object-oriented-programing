@@ -1,6 +1,7 @@
 package agh.ics.oop;
 
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 
 public class Vector2dTest {
