@@ -48,7 +48,7 @@ public class Vector2d {
         return new Vector2d(x + other.x, y + other.y);
     }
 
-    public Vector2d subtrack(Vector2d other) {
+    public Vector2d subtract(Vector2d other) {
         return new Vector2d(x - other.x, y - other.y);
     }
 
@@ -69,4 +69,5 @@ public class Vector2d {
     public Vector2d opposite() {
         return new Vector2d(-1 * x, -1 * y);
     }
+
 }
