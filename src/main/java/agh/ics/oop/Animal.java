@@ -1,68 +1,60 @@
 package agh.ics.oop;
 
 public class Animal {
+    private final IWorldMap map;
+    private Vector2d position;
     private MapDirection direction = MapDirection.NORTH;
-    private Vector2d position = new Vector2d(2, 2);
+
+    public Animal(IWorldMap map, Vector2d initialPosition){
+        this.position = initialPosition;
+        this.map= map;
+    }
+
+    public Animal(IWorldMap map){
+        this(map, new Vector2d(2,2));
+    }
+
+    public Animal() {
+        this(new RectangularMap(5,5));
+    }
+
+    public Vector2d getPosition(){
+        return this.position;
+    }
+
+    public MapDirection getDirection(){
+        return this.direction;
+    }
+
+    public boolean isAt(Vector2d position){
+        return this.position.equals(position);
+    }
 
     public String toString() {
-        return "Direction: " + this.direction + " Position: " + this.position;
+        return switch (this.direction){
+            case NORTH -> "^";
+            case EAST -> ">";
+            case SOUTH -> "v";
+            case WEST -> "<";
+        };
     }
 
     public void move(MoveDirection direction) {
         switch (direction) {
-            case RIGHT:
-                this.direction = this.direction.next();
-                break;
-            case LEFT:
-                this.direction = this.direction.previous();
-                break;
-            case FORWARD:
-                switch (this.direction) {
-                    case NORTH:
-                        if (this.position.y < 4) {
-                            this.position = position.add(MapDirection.NORTH.toUnitVector());
-                        }
-                        break;
-                    case EAST:
-                        if (this.position.x < 4) {
-                            this.position = position.add(MapDirection.EAST.toUnitVector());
-                        }
-                        break;
-                    case SOUTH:
-                        if (this.position.y > 0) {
-                            this.position = position.add(MapDirection.SOUTH.toUnitVector());
-                        }
-                        break;
-                    case WEST:
-                        if (this.position.x > 0) {
-                            this.position = position.add(MapDirection.WEST.toUnitVector());
-                        }
-                        break;
+            case RIGHT -> this.direction = this.direction.next();
+            case LEFT -> this.direction = this.direction.previous();
+            case FORWARD -> {
+                Vector2d newPosition = this.position.add(this.direction.toUnitVector());
+                if (newPosition.precedes(new Vector2d(4,4)) && newPosition.follows(new Vector2d(0,0))){
+                    this.position = newPosition;
                 }
-                break;
-            case BACKWARD:
-                switch (this.direction) {
-                    case NORTH:
-                        if (this.position.y > 0) {
-                            this.position = position.subtract(MapDirection.NORTH.toUnitVector());
-                        }
-                        break;
-                    case EAST:
-                        if (this.position.x > 0) {
-                            this.position = position.subtract(MapDirection.EAST.toUnitVector());
-                        }
-                        break;
-                    case SOUTH:
-                        if (this.position.y < 4) {
-                            this.position = position.subtract(MapDirection.SOUTH.toUnitVector());
-                        }
-                        break;
-                    case WEST:
-                        if (this.position.x < 4) {
-                            this.position = position.subtract(MapDirection.WEST.toUnitVector());
-                        }
-                        break;
+            }
+            case BACKWARD -> {
+                Vector2d newPosition = this.position.subtract(this.direction.toUnitVector());
+                if (newPosition.precedes(new Vector2d(4, 4)) && newPosition.follows(new Vector2d(0, 0))) {
+                    this.position = newPosition;
                 }
+            }
         }
     }
 }

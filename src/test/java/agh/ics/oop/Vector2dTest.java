@@ -55,16 +55,13 @@ public class Vector2dTest {
     }
 
     @Test
-    public void testSubtrack() {
-<<<<<<< HEAD
+    public void testSubtract() {
         assertEquals(new Vector2d(3, 1), position1.subtract(position2));
         assertEquals(new Vector2d(0, 0), position3.subtract(position4));
         assertEquals(new Vector2d(-2000, 2000), position5.subtract(position6));
-=======
-        assertEquals(new Vector2d(3, 1), position1.subtrack(position2));
-        assertEquals(new Vector2d(0, 0), position3.subtrack(position4));
-        assertEquals(new Vector2d(-2000, 2000), position5.subtrack(position6));
->>>>>>> 9dbd3f74cfbf36753eb4eb210a665a242f164bda
+        assertEquals(new Vector2d(3, 1), position1.subtract(position2));
+        assertEquals(new Vector2d(0, 0), position3.subtract(position4));
+        assertEquals(new Vector2d(-2000, 2000), position5.subtract(position6));
     }
 
     @Test
