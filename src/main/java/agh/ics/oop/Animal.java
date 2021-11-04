@@ -26,10 +26,6 @@ public class Animal {
         return this.direction;
     }
 
-    public boolean isAt(Vector2d position){
-        return this.position.equals(position);
-    }
-
     public String toString() {
         return switch (this.direction){
             case NORTH -> "^";
@@ -40,21 +36,15 @@ public class Animal {
     }
 
     public void move(MoveDirection direction) {
+        Vector2d newPosition = position;
         switch (direction) {
             case RIGHT -> this.direction = this.direction.next();
             case LEFT -> this.direction = this.direction.previous();
-            case FORWARD -> {
-                Vector2d newPosition = this.position.add(this.direction.toUnitVector());
-                if (newPosition.precedes(new Vector2d(4,4)) && newPosition.follows(new Vector2d(0,0))){
-                    this.position = newPosition;
-                }
-            }
-            case BACKWARD -> {
-                Vector2d newPosition = this.position.subtract(this.direction.toUnitVector());
-                if (newPosition.precedes(new Vector2d(4, 4)) && newPosition.follows(new Vector2d(0, 0))) {
-                    this.position = newPosition;
-                }
-            }
+            case FORWARD -> newPosition = newPosition.add(this.direction.toUnitVector());
+            case BACKWARD -> newPosition = newPosition.subtract(this.direction.toUnitVector());
+        }
+        if (this.map.canMoveTo(newPosition)){
+            this.position = newPosition;
         }
     }
 }

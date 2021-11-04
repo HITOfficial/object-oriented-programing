@@ -5,12 +5,12 @@ import java.util.List;
 
 public class RectangularMap implements IWorldMap {
     private final Vector2d cornerTopRight;
-    private final  Vector2d cornerBottomLeft = new Vector2d(0, 0);
+    private final Vector2d cornerBottomLeft = new Vector2d(0, 0);
     private final List<Animal> animalsList = new LinkedList<>();
     private final MapVisualizer mapVisualizer = new MapVisualizer(this);
 
     public RectangularMap(int width, int height) {
-        this.cornerTopRight = new Vector2d(width, height);
+        this.cornerTopRight = new Vector2d(width-1, height-1);
     }
 
     @Override
@@ -21,7 +21,7 @@ public class RectangularMap implements IWorldMap {
 
     @Override
     public boolean place(Animal animal) {
-        if (!isOccupied(animal.getPosition())){
+        if (canMoveTo(animal.getPosition())){
             animalsList.add(animal);
             return true;
         }
@@ -33,7 +33,7 @@ public class RectangularMap implements IWorldMap {
     @Override
     public boolean isOccupied(Vector2d position) {
         for (Animal animal : animalsList){
-            if (animal.isAt(position)){
+            if (animal.getPosition().equals(position)){
                 return true;
             }
         }
@@ -43,7 +43,7 @@ public class RectangularMap implements IWorldMap {
     @Override
     public Object objectAt(Vector2d position) {
         for (Animal animal : animalsList){
-            if (animal.isAt(position)){
+            if (animal.getPosition().equals(position)){
                 return animal;
             }
         }
