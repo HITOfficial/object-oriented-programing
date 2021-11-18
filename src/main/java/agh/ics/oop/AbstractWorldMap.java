@@ -6,7 +6,8 @@ import java.util.Random;
 import java.util.Vector;
 
 abstract class AbstractWorldMap implements IWorldMap {
-    protected final Vector2d leftBottomCorner = new Vector2d(0, 0);
+    protected Vector2d rightTopCorner;
+    protected Vector2d leftBottomCorner;
     protected final List<Animal> animalsList = new LinkedList<>();
     protected final MapVisualizer mapVisualizer = new MapVisualizer(this);
 
@@ -29,5 +30,10 @@ abstract class AbstractWorldMap implements IWorldMap {
             }
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return mapVisualizer.draw(leftBottomCorner, rightTopCorner);
     }
 }

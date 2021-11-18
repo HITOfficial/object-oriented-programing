@@ -6,20 +6,20 @@ import java.util.List;
 import java.util.Random;
 
 public class GrassField extends AbstractWorldMap {
-    private final Vector2d rightTopCorner;
     private final List<Grass> grassesList = new LinkedList<>();
+    private final Vector2d leftBottomCorner = new Vector2d(Integer.MIN_VALUE, Integer.MIN_VALUE);
+    private final Vector2d rightTopCorner = new Vector2d(Integer.MAX_VALUE, Integer.MAX_VALUE);
 
     public GrassField(int n) {
-        this.rightTopCorner = new Vector2d((int) Math.sqrt(n), (int) Math.sqrt(n));
-        newGrassList(n);
+        createGrasses(n);
     }
 
-    public void newGrassList(int n) {
+    public void createGrasses(int n) {
         Random random = new Random();
         for (int i = 0; i < n; i++) {
             while (true) {
-                Vector2d position = new Vector2d((int) Math.sqrt(random.nextInt(n)) + 1, (int) Math.sqrt(random.nextInt(n)) + 1);
-                if (canAddGrass(position)) {
+                Vector2d position = new Vector2d((int) Math.sqrt(random.nextInt(n * 10)), (int) Math.sqrt(random.nextInt(n * 10)));
+                if (checkGrass(position)) {
                     this.grassesList.add(new Grass(position));
                     break;
                 }
@@ -27,7 +27,7 @@ public class GrassField extends AbstractWorldMap {
         }
     }
 
-    public boolean canAddGrass(Vector2d position) {
+    public boolean checkGrass(Vector2d position) {
         for (Grass grass : grassesList) {
             if (grass.getPosition().equals(position)) {
                 return false;
@@ -43,16 +43,6 @@ public class GrassField extends AbstractWorldMap {
     }
 
     @Override
-    public boolean isOccupied(Vector2d position) {
-        for (Animal animal : animalsList) {
-            if (animal.getPosition().equals(position)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
     public Object objectAt(Vector2d position) {
         for (Animal animal : animalsList) {
             if (animal.getPosition().equals(position)) {
@@ -65,10 +55,5 @@ public class GrassField extends AbstractWorldMap {
             }
         }
         return null;
-    }
-
-    @Override
-    public String toString() {
-        return mapVisualizer.draw(leftBottomCorner, rightTopCorner);
     }
 }
