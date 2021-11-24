@@ -1,5 +1,6 @@
 package agh.ics.oop;
 
+import java.util.Objects;
 import java.util.Vector;
 
 public class Vector2d {
@@ -64,6 +65,11 @@ public class Vector2d {
             // checking if objects has equal values
             return this.x == tmpPoint.x && this.y == tmpPoint.y;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.x,this.y);
     }
 
     public Vector2d opposite() {

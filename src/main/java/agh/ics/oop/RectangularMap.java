@@ -19,11 +19,11 @@ public class RectangularMap extends AbstractWorldMap {
 
     @Override
     public Object objectAt(Vector2d position) {
-        for (Animal animal : animalsList){
-            if (animal.getPosition().equals(position)){
-                return animal;
-            }
-        }
-        return null;
+        return animals.get(position);
+    }
+
+    @Override
+    public String toString() {
+        return mapVisualizer.draw(leftBottomCorner, rightTopCorner);
     }
 }

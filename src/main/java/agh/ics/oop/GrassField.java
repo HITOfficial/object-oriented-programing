@@ -1,12 +1,13 @@
 package agh.ics.oop;
 
 import javax.xml.stream.FactoryConfigurationError;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
 public class GrassField extends AbstractWorldMap {
-    private final List<Grass> grassesList = new LinkedList<>();
+    private final LinkedHashMap<Vector2d, Grass> grasses = new LinkedHashMap<>();
     private final Vector2d leftBottomCorner = new Vector2d(Integer.MIN_VALUE, Integer.MIN_VALUE);
     private final Vector2d rightTopCorner = new Vector2d(Integer.MAX_VALUE, Integer.MAX_VALUE);
 
@@ -19,21 +20,12 @@ public class GrassField extends AbstractWorldMap {
         for (int i = 0; i < n; i++) {
             while (true) {
                 Vector2d position = new Vector2d((int) Math.sqrt(random.nextInt(n * 10)), (int) Math.sqrt(random.nextInt(n * 10)));
-                if (checkGrass(position)) {
-                    this.grassesList.add(new Grass(position));
+                if (grasses.get(position) == null) {
+                    this.grasses.put(position, new Grass(position));
                     break;
                 }
             }
         }
-    }
-
-    public boolean checkGrass(Vector2d position) {
-        for (Grass grass : grassesList) {
-            if (grass.getPosition().equals(position)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     @Override
@@ -44,16 +36,21 @@ public class GrassField extends AbstractWorldMap {
 
     @Override
     public Object objectAt(Vector2d position) {
-        for (Animal animal : animalsList) {
-            if (animal.getPosition().equals(position)) {
-                return animal;
-            }
+        Animal animal = animals.get(position);
+        Grass grass = grasses.get(position);
+        if (animal != null) {
+            return animal;
         }
-        for (Grass grass : grassesList) {
-            if (grass.getPosition().equals(position)) {
-                return grass;
-            }
+        else if (grass != null) {
+            return grass;
         }
-        return null;
+        else {
+            return null;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return mapVisualizer.draw(leftBottomCorner, rightTopCorner);
     }
 }

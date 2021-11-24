@@ -1,20 +1,17 @@
 package agh.ics.oop;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-import java.util.Vector;
+import java.util.*;
 
-abstract class AbstractWorldMap implements IWorldMap {
+abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
     protected Vector2d rightTopCorner;
     protected Vector2d leftBottomCorner;
-    protected final List<Animal> animalsList = new LinkedList<>();
+    protected final LinkedHashMap<Vector2d, Animal> animals = new LinkedHashMap<>();
     protected final MapVisualizer mapVisualizer = new MapVisualizer(this);
 
     @Override
     public boolean place(Animal animal) {
         if (canMoveTo(animal.getPosition())){
-            animalsList.add(animal);
+            animals.put(animal.getPosition(),animal);
             return true;
         }
         else {
@@ -24,16 +21,20 @@ abstract class AbstractWorldMap implements IWorldMap {
 
     @Override
     public boolean isOccupied(Vector2d position) {
-        for (Animal animal : animalsList){
-            if (animal.getPosition().equals(position)){
-                return true;
-            }
+        if(animals.get(position) != null) {
+            return true;
         }
+        else {
         return false;
+        }
     }
 
-    @Override
-    public String toString() {
-        return mapVisualizer.draw(leftBottomCorner, rightTopCorner);
+    public void positionChanged (Vector2d oldPosition, Vector2d newPosition){
+        // removing previous coordinate from linkedHashMap, and insert new one
+        Animal animal = animals.get(oldPosition);
+        animals.remove(animals.get(oldPosition));
+        animals.put(newPosition, animal);
     }
+
+
 }
