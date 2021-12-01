@@ -21,6 +21,8 @@ public class OptionsParser {
                 case "r", "right":
                     directionsList.add(MoveDirection.RIGHT);
                     break;
+                default:
+                    throw new IllegalArgumentException(singleString + " is not legal move specification");
             }
         }
 
