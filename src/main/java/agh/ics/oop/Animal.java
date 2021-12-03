@@ -48,7 +48,7 @@ public class Animal {
 
     private void positionChanged(Vector2d oldPosition, Vector2d newPosition) {
         for (IPositionChangeObserver observer : observers) {
-            observer.positionChanged(oldPosition, newPosition);
+            observer.positionChanged(oldPosition, newPosition, this.getClass());
         }
     }
 

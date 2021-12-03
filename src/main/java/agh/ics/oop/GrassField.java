@@ -51,6 +51,6 @@ public class GrassField extends AbstractWorldMap {
 
     @Override
     public String toString() {
-        return mapVisualizer.draw(leftBottomCorner, rightTopCorner);
+        return mapVisualizer.draw(mapBoundary.getLowerLeft(), mapBoundary.getUpperRight());
     }
 }

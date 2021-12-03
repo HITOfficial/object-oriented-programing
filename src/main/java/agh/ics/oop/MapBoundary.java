@@ -4,30 +4,42 @@ import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class MapBoundary  {
-    public SortedSet<Vector2d> sortedSetX = new TreeSet<>(Comparator.comparingInt(e -> e.getX()));
-    public SortedSet<Vector2d> sortedSetY = new TreeSet<>(Comparator.comparingInt(e -> e.getY()));
+public class MapBoundary implements IPositionChangeObserver {
+    public SortedSet<Pair<Vector2d, Object>> sortedSetX = new TreeSet<Pair<Vector2d, Object>>((e1, e2) -> {
+        if (e1.vector.getX() == e2.vector.getX()) {
+            return e1.vector.getY() - e2.vector.getY();
+        } else {
+            return e1.vector.getX() - e2.vector.getX();
+        }
+    });
+    public SortedSet<Pair<Vector2d, Object>> sortedSetY = new TreeSet<Pair<Vector2d, Object>>((e1, e2) -> {
+        if (e1.vector.getY() == e2.vector.getY()) {
+            return e1.vector.getX() - e2.vector.getX();
+        } else {
+            return e1.vector.getY() - e2.vector.getY();
+        }
+    });
 
-    public void positionChanged(Vector2d previous, Vector2d actual) {
-        removeVector(previous);
-        addVector(actual);
+    public void positionChanged(Vector2d previous, Vector2d actual, Object type) {
+        removePair(previous, type);
+        addPair(actual, type);
     }
 
-    public void addVector(Vector2d vector) {
-        sortedSetX.add(vector);
-        sortedSetY.add(vector);
+    public void addPair(Vector2d vector, Object type) {
+        sortedSetX.add(new Pair(vector, type));
+        sortedSetY.add(new Pair(vector, type));
     }
 
-    public void removeVector(Vector2d vector) {
-        sortedSetX.remove(vector);
-        sortedSetY.remove(vector);
+    public void removePair(Vector2d vector, Object type) {
+        sortedSetX.remove(new Pair<>(vector, type));
+        sortedSetY.remove(new Pair<>(vector, type));
     }
 
     public Vector2d getLowerLeft() {
-        return new Vector2d(sortedSetX.first().x, sortedSetY.first().getY());
+        return new Vector2d(sortedSetX.first().vector.getX(), sortedSetY.first().vector.getY());
     }
 
     public Vector2d getUpperRight() {
-        return new Vector2d(sortedSetX.last().getX(), sortedSetY.last().getY());
+        return new Vector2d(sortedSetX.last().vector.getX(), sortedSetY.last().vector.getY());
     }
 }
