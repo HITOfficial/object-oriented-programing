@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class MapBoundary  {
+public class MapBoundary  { // nie używana
     public SortedSet<Vector2d> sortedSetX = new TreeSet<>(Comparator.comparingInt(e -> e.getX()));
     public SortedSet<Vector2d> sortedSetY = new TreeSet<>(Comparator.comparingInt(e -> e.getY()));
 
@@ -18,7 +18,7 @@ public class MapBoundary  {
         sortedSetY.add(vector);
     }
 
-    public void removeVector(Vector2d vector) {
+    public void removeVector(Vector2d vector) { // czy public?
         sortedSetX.remove(vector);
         sortedSetY.remove(vector);
     }

@@ -15,13 +15,13 @@ abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
             return true;
         }
         else {
-            return false;
+            return false;   // brak wyjątku
         }
     }
 
     @Override
     public boolean isOccupied(Vector2d position) {
-        if(animals.get(position) != null) {
+        if(animals.get(position) != null) { // return (animals.get(position) != null);
             return true;
         }
         else {
@@ -36,5 +36,6 @@ abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
         animals.put(newPosition, animal);
     }
 
+    // brak toString
 
 }
