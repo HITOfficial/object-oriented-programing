@@ -32,8 +32,10 @@ abstract class AbstractWorldMap implements IWorldMap {
         return false;
     }
 
+    //a objectAt?
+
     @Override
     public String toString() {
-        return mapVisualizer.draw(leftBottomCorner, rightTopCorner);
+        return mapVisualizer.draw(leftBottomCorner, rightTopCorner);    // a kto ustawi te pola?
     }
 }

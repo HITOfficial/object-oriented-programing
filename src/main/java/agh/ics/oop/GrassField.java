@@ -39,7 +39,7 @@ public class GrassField extends AbstractWorldMap {
     @Override
     public boolean canMoveTo(Vector2d position) {
         // being inside map and place to which is moving isn't locked by another animal
-        return position.follows(this.leftBottomCorner) && position.precedes(this.rightTopCorner) && !isOccupied(position);
+        return position.follows(this.leftBottomCorner) && position.precedes(this.rightTopCorner) && !isOccupied(position);  // w RectangularMap jest identyczna metoda - jak się to ma do nieograniczoności mapy?
     }
 
     @Override

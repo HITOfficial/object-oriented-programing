@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class RectangularMap extends AbstractWorldMap {
-    private final Vector2d leftBottomCorner = new Vector2d(0,0);
+    private final Vector2d leftBottomCorner = new Vector2d(0,0);    // w klasie bazowej też jest takie pole, tylko protected
     private final Vector2d rightTopCorner;
 
     public RectangularMap(int width, int height) {
