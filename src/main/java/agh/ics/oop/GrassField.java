@@ -21,7 +21,9 @@ public class GrassField extends AbstractWorldMap {
             while (true) {
                 Vector2d position = new Vector2d((int) Math.sqrt(random.nextInt(n * 10)), (int) Math.sqrt(random.nextInt(n * 10)));
                 if (grasses.get(position) == null) {
-                    this.grasses.put(position, new Grass(position));
+                    Grass grass = new Grass(position);
+                    this.grasses.put(position, grass);
+                    mapBoundary.addPair(position, grass.getClass());
                     break;
                 }
             }
@@ -47,6 +49,14 @@ public class GrassField extends AbstractWorldMap {
         else {
             return null;
         }
+    }
+
+    public Vector2d getLowerLeft() {
+        return mapBoundary.getLowerLeft();
+    }
+
+    public Vector2d getUpperRight() {
+        return mapBoundary.getUpperRight();
     }
 
     @Override
