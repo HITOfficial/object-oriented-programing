@@ -6,9 +6,16 @@ import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+
+import javax.swing.text.Element;
+import javax.swing.text.html.ImageView;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 public class App extends Application {
     @Override
@@ -20,7 +27,7 @@ public class App extends Application {
         engine.run();
     }
 
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws FileNotFoundException {
         // ??
         MoveDirection[] directions = OptionsParser.parse(new String[]{"f", "f", "b", "r", "l", "f", "f", "r", "r", "f", "f", "f", "f", "f", "f", "f", "f"});
         GrassField map = new GrassField(10);
@@ -69,13 +76,22 @@ public class App extends Application {
         for (int i = lowerLeftX; i <= upperRightX; i++) {
             for (int j = upperRightY; j >= lowerLeftY; j--) {
                 // checking if something is on this coordinate
-                if (map.objectAt(new Vector2d(i, j)) != null) {
-                    Object objectAtPosition = map.objectAt(new Vector2d(i, j));
-                    Label label = new Label(objectAtPosition.toString());
-                    label.setAlignment(Pos.CENTER);
-                    label.setMinWidth(50);
-                    label.setMinHeight(50);
-                    gridPane.add(label, 1 + upperRightY - j, 1 + i - lowerLeftX, 1, 1);
+                Object objectAtPosition = map.objectAt(new Vector2d(i, j));
+                if (objectAtPosition != null) {
+                    VBox vBox;
+                    // Grass
+                    if (objectAtPosition.getClass().getName().equals("agh.ics.oop.Grass")) {
+                        Grass grass = (Grass) objectAtPosition;
+                        vBox = new GuiElementBox(grass, new Vector2d(i, j)).getVBox();
+                    }
+                    // Animal
+                    else {
+                        Animal animal = (Animal) objectAtPosition;
+
+                        vBox = new GuiElementBox(animal, new Vector2d(i, j),animal.getDirection()).getVBox();
+
+                    }
+                    gridPane.add(vBox, 1 + upperRightY - j, 1 + i - lowerLeftX, 1, 1);
                 }
             }
         }
