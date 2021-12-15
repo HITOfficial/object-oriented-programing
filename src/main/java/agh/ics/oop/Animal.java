@@ -1,5 +1,6 @@
 package agh.ics.oop;
 
+import java.io.FileNotFoundException;
 import java.util.LinkedList;
 
 public class Animal {
@@ -46,13 +47,13 @@ public class Animal {
         this.observers.remove(observer);
     }
 
-    private void positionChanged(Vector2d oldPosition, Vector2d newPosition) {
+    private void positionChanged() throws FileNotFoundException, InterruptedException {
         for (IPositionChangeObserver observer : observers) {
-            observer.positionChanged(oldPosition, newPosition, this.getClass());
+            observer.update();
         }
     }
 
-    public boolean move(MoveDirection direction) {
+    public boolean move(MoveDirection direction) throws FileNotFoundException, InterruptedException {
         Vector2d newPosition = position;
         switch (direction) {
             case RIGHT -> this.direction = this.direction.next();
@@ -62,6 +63,7 @@ public class Animal {
         }
         if (this.map.canMoveTo(newPosition)) {
             this.position = newPosition;
+            positionChanged();
             return true;
         } else {
             return false;

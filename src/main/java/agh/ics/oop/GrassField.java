@@ -1,6 +1,7 @@
 package agh.ics.oop;
 
 import javax.xml.stream.FactoryConfigurationError;
+import java.io.FileNotFoundException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,5 +63,10 @@ public class GrassField extends AbstractWorldMap {
     @Override
     public String toString() {
         return mapVisualizer.draw(mapBoundary.getLowerLeft(), mapBoundary.getUpperRight());
+    }
+
+    @Override
+    public void update() {
+
     }
 }

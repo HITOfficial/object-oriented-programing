@@ -1,5 +1,6 @@
 package agh.ics.oop;
 
+import java.io.FileNotFoundException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -25,5 +26,10 @@ public class RectangularMap extends AbstractWorldMap {
     @Override
     public String toString() {
         return mapVisualizer.draw(leftBottomCorner, rightTopCorner);
+    }
+
+    @Override
+    public void update() {
+
     }
 }
