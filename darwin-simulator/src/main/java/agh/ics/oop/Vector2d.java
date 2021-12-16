@@ -82,4 +82,5 @@ public class Vector2d {
     public Vector2d opposite() {
         return new Vector2d(-1 * x, -1 * y);
     }
+
 }

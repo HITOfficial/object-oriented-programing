@@ -14,7 +14,7 @@ public interface IWorldMap {
      * @param position The position checked for the movement possibility.
      * @return True if the object can move to that position.
      */
-    default boolean canMoveTo(Vector2d position) {
+    default boolean changePosition(Vector2d position, Animal animal) {
         return false;
     }
 

@@ -18,13 +18,32 @@ public class World {
 //            Vector2d[] positions = {new Vector2d(2, 2), new Vector2d(3, 4)};
 //            SimulationEngine engine = new SimulationEngine(directions, map, positions);
 //            engine.run();
-            System.out.println((int) Math.round(Math.random()));
-            System.out.println((int) Math.round(Math.random()));
-            System.out.println((int) Math.round(Math.random()));
-            System.out.println((int) Math.round(Math.random()));
-            System.out.println((int) Math.round(Math.random()));
 
             SavannaMap map = new SavannaMap();
+            Animal a1 = new Animal(map, new Vector2d(0,0), 165);
+            Animal a2 = new Animal(map, new Vector2d(0,0), 65);
+            Animal a5 = new Animal(map, new Vector2d(0,0), 60);
+            Animal a3 = new Animal(map, new Vector2d(0,0), 40);
+            Animal a4 = new Animal(map, new Vector2d(0,0), 40);
+
+            map.addAnimal(a1);
+            map.addAnimal(a2);
+            map.addAnimal(a3);
+            map.addAnimal(a5);
+            map.addAnimal(a4);
+//            map.grass.put(new Vector2d(0,0), new Grass(new Vector2d(0,0)));
+            map.nextAge();
+            map.nextAge();
+            map.nextAge();
+            map.nextAge();
+            map.nextAge();
+            map.nextAge();
+            map.nextAge();
+            map.nextAge();
+            map.nextAge();
+            map.nextAge();
+            map.nextAge();
+            map.nextAge();
             map.nextAge();
             map.nextAge();
             map.nextAge();
@@ -33,10 +52,6 @@ public class World {
             map.nextAge();
             map.nextAge();
 
-            Animal animal1 = new Animal(map, new Vector2d(3,33), 100);
-            Animal animal2 = new Animal(map, new Vector2d(3,33), 1606);
-
-            Animal animal3 = animal1.reproduction(animal2);
 
         } catch (IllegalArgumentException e) {
             System.out.println(e);

@@ -54,12 +54,10 @@ public class Animal {
     public void move() {
         this.rotate();
         Vector2d newPosition = position.add(direction.toUnitVector());
-        if (map.canMoveTo(newPosition)) {
+        if (map.changePosition(newPosition, this)) {
             for (IPositionChangeObserver observer : observerList) {
                 observer.positionChanged(this.position, newPosition, this.getClass());
             }
-            this.position = newPosition;
-
         }
     }
 
