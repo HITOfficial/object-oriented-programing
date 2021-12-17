@@ -1,7 +1,13 @@
 package agh.ics.oop;
 
 
-public class Grass {
+import agh.ics.oop.gui.IMapElement;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+
+import java.awt.*;
+
+public class Grass implements IMapElement {
     private Vector2d position;
     private int energy;
 
@@ -23,4 +29,13 @@ public class Grass {
     }
 
 
+    @Override
+    public VBox draw(GridPane grid, Vector2d position, Object type) {
+        return null;
+    }
+
+    @Override
+    public Color getColor() {
+        return new Color(0,128,0);
+    }
 }

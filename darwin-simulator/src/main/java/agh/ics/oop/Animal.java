@@ -1,8 +1,13 @@
 package agh.ics.oop;
 
+import agh.ics.oop.gui.IMapElement;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+
+import java.awt.*;
 import java.util.ArrayList;
 
-public class Animal {
+public class Animal implements IMapElement {
     public Genes genes;
     public MapDirection direction;
 
@@ -11,6 +16,7 @@ public class Animal {
     public int startEnergy;
     public ArrayList<IPositionChangeObserver> observerList = new ArrayList<>();
     protected Vector2d position;
+    protected Vector2d newPosition;
 
     public Animal() {
         direction = MapDirection.NORTH;
@@ -52,11 +58,11 @@ public class Animal {
     }
 
     public void move() {
-        this.rotate();
         Vector2d newPosition = position.add(direction.toUnitVector());
+
         if (map.changePosition(newPosition, this)) {
             for (IPositionChangeObserver observer : observerList) {
-                observer.positionChanged(this.position, newPosition, this.getClass());
+                observer.positionChanged();
             }
         }
     }
@@ -70,4 +76,18 @@ public class Animal {
         return other;
     }
 
+
+    @Override
+    public VBox draw(GridPane grid, Vector2d position, Object type) {
+        return null;
+    }
+
+    public Color getColor() {
+        if (energy < 0.2 * startEnergy) return new Color(255,248,220);
+        else if (energy < 0.5 * startEnergy) return new Color(255,235,205);
+        else if (energy < 0.8 * startEnergy) return new Color(255,228,196);
+        else if (energy < 1.5 * startEnergy) return new Color(245,222,179);
+        else if (energy < 3 * startEnergy) return new Color(210,180,140);
+        return new Color(163, 141, 110);
+    }
 }
