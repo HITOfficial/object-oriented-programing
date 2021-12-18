@@ -3,9 +3,11 @@ package agh.ics.oop;
 import agh.ics.oop.gui.IMapElement;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Paint;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Animal implements IMapElement {
     public Genes genes;
@@ -33,11 +35,13 @@ public class Animal implements IMapElement {
     public Animal(IWorldMap map, Vector2d position) {
         this(map);
         this.position = position;
+//        this.newPosition = position;
     }
 
     // animal from reproduction
     public Animal(IWorldMap map, Vector2d position, int startEnergy) {
         this(map, position);
+        this.position = new Vector2d(position.getX(),position.getY());
         this.energy = startEnergy;
         this.startEnergy = startEnergy;
     }
@@ -77,17 +81,37 @@ public class Animal implements IMapElement {
     }
 
 
+    public boolean equals(Object other) {
+        if (this == other) {
+            // same object
+            return true;
+        } else if (!(other instanceof Animal)) {
+            // other is an object from another class
+            return false;
+        } else {
+            Animal tmpAnimal = (Animal) other;
+            // checking if objects has equal values
+            return this.position == tmpAnimal.position && this.genes == tmpAnimal.genes && this.startEnergy == tmpAnimal.startEnergy;
+        }
+    }
+
+
     @Override
-    public VBox draw(GridPane grid, Vector2d position, Object type) {
+    public VBox draw(Object type) {
         return null;
     }
 
-    public Color getColor() {
-        if (energy < 0.2 * startEnergy) return new Color(255,248,220);
-        else if (energy < 0.5 * startEnergy) return new Color(255,235,205);
-        else if (energy < 0.8 * startEnergy) return new Color(255,228,196);
-        else if (energy < 1.5 * startEnergy) return new Color(245,222,179);
-        else if (energy < 3 * startEnergy) return new Color(210,180,140);
-        return new Color(163, 141, 110);
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.position.getX(),this.position.getY(),this.genes);
+    }
+
+    public Paint getColor() {
+        if (energy < 0.2 * startEnergy) return Paint.valueOf("rgb(255,248,220)");
+        else if (energy < 0.5 * startEnergy) return Paint.valueOf("rgb(255,235,205)");
+        else if (energy < 0.8 * startEnergy) return Paint.valueOf("rgb(255,228,196)");
+        else if (energy < 1.5 * startEnergy) return Paint.valueOf("rgb(245,222,179)");
+        else if (energy < 3 * startEnergy) return Paint.valueOf("rgb(210,180,140)");
+        return Paint.valueOf("rgb(163,141,110)");
     }
 }

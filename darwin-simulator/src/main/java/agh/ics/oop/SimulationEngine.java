@@ -13,25 +13,26 @@ public class SimulationEngine implements Runnable {
 
 
     public SimulationEngine(IPositionChangeObserver observer) {
-        this.map = new SavannaMap(observer);
         this.observer = observer;
+        this.map = new SavannaMap(observer);
 
         LinkedList<Animal> animals = new LinkedList<>();
-        Animal a1 = new Animal(map, new Vector2d(0,0), 165);
-        Animal a2 = new Animal(map, new Vector2d(0,0), 65);
-        Animal a5 = new Animal(map, new Vector2d(0,0), 60);
-        Animal a3 = new Animal(map, new Vector2d(0,0), 40);
-        Animal a4 = new Animal(map, new Vector2d(0,0), 40);
+//        Animal a1 = new Animal(map, new Vector2d(5,8), 165);
+//        Animal a2 = new Animal(map, new Vector2d(0,0), 265);
+//        Animal a3 = new Animal(map, new Vector2d(18,6), 440);
+//        Animal a4 = new Animal(map, new Vector2d(0,0), 440);
+        Animal a5 = new Animal(map, new Vector2d(52,20), 360);
 
-        animals.add(a1);
-        animals.add(a2);
-        animals.add(a3);
-        animals.add(a4);
-        animals.add(a5);
+
+//        animals.add(a1);
+//        animals.add(a2);
+//        animals.add(a3);
+//        animals.add(a4);
+//        animals.add(a5);
 
         System.out.println("engine start");
-        map.addAnimals(startingAnimals);
-        this.startingAnimals = startingAnimals;
+        this.startingAnimals = animals;
+//        map.addAnimals(startingAnimals);
     }
 
 
@@ -39,17 +40,17 @@ public class SimulationEngine implements Runnable {
     public void run() {
         // starting simulation
         map.addAnimals(startingAnimals);
-        map.nextAge();
 
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1000; i++) {
             map.nextAge();
-            System.out.println("next Age");
+//            System.out.println("next Age");
             try {
-                Thread.sleep(50);
+                Thread.sleep(100);
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
+
             }
         }
     }
