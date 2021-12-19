@@ -1,6 +1,7 @@
 package agh.ics.oop;
 
 //import agh.ics.oop.gui.App;
+
 import agh.ics.oop.gui.IMapElement;
 
 import java.util.*;
@@ -14,13 +15,13 @@ public class SavannaMap implements IWorldMap {
     private final Vector2d jungleLowerLeft;
     private final Vector2d jungleUpperRight;
 
-    private final boolean boundedMap = true;
+    public final boolean boundedMap = true;
     public final int ageCost = 5;
     public final int startEnergy = 100;
     public final int minReproductionEnergy = 20;
-    private int animalsCounter = 0;
-    private int grassCounter = 0;
-    private int ageCounter = 0;
+    public int animalsCounter = 0;
+    public int grassCounter = 0;
+    public int ageCounter = 0;
     private IPositionChangeObserver observer;
 
     public LinkedHashMap<Vector2d, Grass> grass = new LinkedHashMap<>();
@@ -45,9 +46,9 @@ public class SavannaMap implements IWorldMap {
 //        Animal a9 = new Animal(this, new Vector2d(52, 2), 60);
 //        Animal a10 = new Animal(this, new Vector2d(52, 23), 60);
 //        Animal a11 = new Animal(this, new Vector2d(52, 15), 60);
-        for (int i = 0; i < 500; i++) {
-            Animal a1 = new Animal(this, new Vector2d(50, 20), 1000);
-            addAnimal(a1.position,a1);
+        for (int i = 0; i < 3; i++) {
+            Animal a1 = new Animal(this, new Vector2d(50, 25), 1000);
+            addAnimal(a1.position, a1);
         }
 
 //        addAnimal(a2.position, a2);
@@ -139,7 +140,7 @@ public class SavannaMap implements IWorldMap {
         updateAgeCounter();
 
         // UI info to reload the map
-        this.observer.positionChanged();
+        this.observer.positionChanged(this);
     }
 
 
@@ -177,7 +178,7 @@ public class SavannaMap implements IWorldMap {
             Vector2d jungleVector = new Vector2d(x, y);
             if (objectAt(jungleVector) == null) {
                 grass.put(jungleVector, new Grass(jungleVector));
-                updateGrassCounter();
+                newGrassUpdateCounter();
                 break;
             }
             junglePossibilities -= 1;
@@ -195,13 +196,20 @@ public class SavannaMap implements IWorldMap {
 //                Vector2d desertVector = new Vector2d(x, y);
                 if (objectAt(desertVector) == null) {
                     grass.put(desertVector, new Grass(desertVector));
-                    updateGrassCounter();
+                    newGrassUpdateCounter();
                     break;
                 }
                 desertPossibilities -= 1;
             }
         }
 
+    }
+
+    private LinkedList<Animal> nRandomAnimals(LinkedList<Animal> animalsList, int n) {
+        while (animalsList.size() > n) {
+            animalsList.remove(Math.random() * animalsList.size());
+        }
+        return animalsList;
     }
 
     // single reproduction complexity +/- O(x*y*n)
@@ -211,6 +219,8 @@ public class SavannaMap implements IWorldMap {
         for (Vector2d position : animals.keySet()) {
             LinkedList<Animal> animalsList = reproductionAnimals(position);
             if (animalsList.size() >= 2) {
+                animalsList = nRandomAnimals(animalsList, 2);
+                // more than one animal with top energy -> taking randomly two from the size
                 if (animalsList.get(1).energy >= minReproductionEnergy && animalsList.get(0).energy >= minReproductionEnergy) {
                     Animal newAnimal = animalsList.get(0).reproduction(animalsList.get(1));
                     animalsToBorn.add(newAnimal);
@@ -218,9 +228,9 @@ public class SavannaMap implements IWorldMap {
             }
         }
 
-        for(Animal animal : animalsToBorn) {
+        for (Animal animal : animalsToBorn) {
             animals.get(animal).add(animal);
-            updateAnimalsCounter();
+            newAnimalUpdateCounter();
         }
 
     }
@@ -241,7 +251,7 @@ public class SavannaMap implements IWorldMap {
         if (boundedMap) {
 //            new position still on map
             if (position.precedes(upperRight) && position.follows(lowerLeft)) {
-                animal.newPosition = new Vector2d(position.getX(),position.getY());
+                animal.newPosition = position;
                 return true;
             } else {
                 return false;
@@ -288,6 +298,7 @@ public class SavannaMap implements IWorldMap {
         }
         for (Grass g : grassToRemoveList) {
             grass.remove(g.getPosition());
+            eatenGrassUpdateCounter();
         }
     }
 
@@ -307,6 +318,7 @@ public class SavannaMap implements IWorldMap {
         for (Animal animal : deadAnimals) {
             Vector2d position = animal.position;
             removeAnimal(position, animal);
+            deadAnimalUpdateCounter();
         }
     }
 
@@ -314,19 +326,21 @@ public class SavannaMap implements IWorldMap {
         LinkedList<Animal> movedAnimals = new LinkedList<>();
         for (Vector2d position : animals.keySet()) {
             for (Animal animal : animals.get(position)) {
-                animal.rotate();
-                Vector2d newPosition = position.add(animal.direction.toUnitVector());
-                if (moveTo(newPosition, animal)) {
-                    movedAnimals.add(animal);
+                // condition: changed direction 0deg. or 180deg.
+                if (animal.rotateAndMove()) {
+                    Vector2d newPosition = position.add(animal.direction.toUnitVector());
+                    if (moveTo(newPosition, animal)) {
+                        movedAnimals.add(animal);
+                    }
                 }
             }
         }
 
         // changing position of animals on hashmap
         for (Animal animal : movedAnimals) {
-            Vector2d position = new Vector2d(animal.position.getX(),animal.position.getY());
+            Vector2d position = new Vector2d(animal.position.getX(), animal.position.getY());
             removeAnimal(position, animal);
-            animal.position = new Vector2d(animal.newPosition.getX(),animal.newPosition.getY());
+            animal.position = new Vector2d(animal.newPosition.getX(), animal.newPosition.getY());
             addAnimal(animal.position, animal);
         }
     }
@@ -345,16 +359,24 @@ public class SavannaMap implements IWorldMap {
         return animals.get(position) != null && animals.get(position).size() > 0;
     }
 
-    private void updateGrassCounter() {
+    private void newGrassUpdateCounter() {
         this.grassCounter += 1;
     }
 
-    private void updateAnimalsCounter() {
+    private void eatenGrassUpdateCounter() {
+        this.grassCounter -= 1;
+    }
+
+    private void newAnimalUpdateCounter() {
+        this.animalsCounter += 1;
+    }
+
+    private void deadAnimalUpdateCounter() {
         this.animalsCounter += 1;
     }
 
     private void updateAgeCounter() {
-        this.animalsCounter += 1;
+        this.ageCounter += 1;
     }
 
 }

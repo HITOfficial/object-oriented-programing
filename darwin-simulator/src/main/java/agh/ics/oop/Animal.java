@@ -41,7 +41,7 @@ public class Animal implements IMapElement {
     // animal from reproduction
     public Animal(IWorldMap map, Vector2d position, int startEnergy) {
         this(map, position);
-        this.position = new Vector2d(position.getX(),position.getY());
+        this.position = new Vector2d(position.getX(), position.getY());
         this.energy = startEnergy;
         this.startEnergy = startEnergy;
     }
@@ -54,22 +54,25 @@ public class Animal implements IMapElement {
         this.energy += val;
     }
 
-    public void rotate() {
+    public boolean rotateAndMove() {
+        int counter = 0;
         for (int i = 0; i <= genes.randomRotate(); i++) {
-            // changing direction and trying to move;
             this.direction = this.direction.next();
+            counter += 1;
         }
+        // can move animal
+        return counter == 0 || counter == 4;
     }
 
-    public void move() {
-        Vector2d newPosition = position.add(direction.toUnitVector());
-
-        if (map.changePosition(newPosition, this)) {
-            for (IPositionChangeObserver observer : observerList) {
-                observer.positionChanged();
-            }
-        }
-    }
+//    public void move() {
+//        Vector2d newPosition = position.add(direction.toUnitVector());
+//
+//        if (map.changePosition(newPosition, this)) {
+//            for (IPositionChangeObserver observer : observerList) {
+//                observer.positionChanged();
+//            }
+//        }
+//    }
 
     public Animal reproduction(Animal other) {
         int childEnergy = (int) (0.25 * this.energy) + (int) (0.25 * other.energy);
