@@ -12,15 +12,19 @@ import java.util.Objects;
 public class Animal implements IMapElement {
     public Genes genes;
     public MapDirection direction;
-
     public IWorldMap map;
     public int energy;
     public int startEnergy;
     public ArrayList<IPositionChangeObserver> observerList = new ArrayList<>();
+    public int bornDate;
+    public int deathDate;
+    public int numberOfChildren;
     protected Vector2d position;
     protected Vector2d newPosition;
 
     public Animal() {
+        numberOfChildren = 0;
+        bornDate = 0;
         direction = MapDirection.NORTH;
         position = new Vector2d(2, 2);
         genes = new Genes();
@@ -44,6 +48,11 @@ public class Animal implements IMapElement {
         this.position = new Vector2d(position.getX(), position.getY());
         this.energy = startEnergy;
         this.startEnergy = startEnergy;
+    }
+
+    public Animal(IWorldMap map, Vector2d position, int startEnergy, int bornDate) {
+        this(map, position, startEnergy);
+        this.bornDate = bornDate;
     }
 
     public boolean isDead() {
@@ -74,13 +83,13 @@ public class Animal implements IMapElement {
 //        }
 //    }
 
-    public Animal reproduction(Animal other) {
+    public Animal reproduction(Animal other, int bornDate) {
         int childEnergy = (int) (0.25 * this.energy) + (int) (0.25 * other.energy);
         this.updateEnergy((int) ((-1) * 0.25 * this.energy));
         other.updateEnergy((int) ((-1) * 0.25 * other.energy));
-        Animal childAnimal = new Animal(map, this.position, childEnergy);
+        Animal childAnimal = new Animal(map, new Vector2d(other.position.getX(), other.position.getY()), childEnergy, bornDate);
         childAnimal.genes = new Genes(this.genes.getGenes(), other.genes.getGenes(), this.energy, other.energy);
-        return other;
+        return childAnimal;
     }
 
 
@@ -98,6 +107,14 @@ public class Animal implements IMapElement {
         }
     }
 
+    public void setDeathDate(int deathDate) {
+        this.deathDate = deathDate;
+    }
+
+    public int liveLength() {
+        return deathDate - bornDate;
+    }
+
 
     @Override
     public VBox draw(Object type) {
@@ -106,7 +123,7 @@ public class Animal implements IMapElement {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.position.getX(),this.position.getY(),this.genes);
+        return Objects.hash(this.position.getX(), this.position.getY(), this.genes);
     }
 
     public Paint getColor() {

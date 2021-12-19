@@ -46,10 +46,19 @@ public class App extends Application implements IPositionChangeObserver {
     private LineChart lineChart;
     private XYChart.Series dataSeriesBoundedMapAnimal;
     private XYChart.Series dataSeriesUnboundedMapAnimal;
+    private XYChart.Series dataSeriesUnboundedMapAVGLifeLength;
+    private XYChart.Series dataSeriesUnboundedMapAVGEnergy;
     private XYChart.Series dataSeriesBoundedMapGrass;
     private XYChart.Series dataSeriesUnboundedMapGrass;
+    private XYChart.Series dataSeriesBoundedMapAVGLifeLength;
+    private XYChart.Series dataSeriesBoundedMapAVGEnergy;
+
     private VBox root;
     private VBox mapsWrapper;
+
+    private VBox boundedMapGenotypeDominantWrapper;
+    private VBox unboundedMapGenotypeDominantWrapper;
+    private VBox actualAgeWrapper;
 
 
     public void start(Stage stage) {
@@ -60,6 +69,9 @@ public class App extends Application implements IPositionChangeObserver {
 
         // lineChart
         createLineChart();
+        // dominants info
+        constructInfo();
+
 
         // bounded map gird
         GridPane boundedMap = new GridPane();
@@ -75,15 +87,12 @@ public class App extends Application implements IPositionChangeObserver {
         // running
         startSimulationEngine();
 
-//        this.stage = stage;
         // running engine
         stage.setTitle("Evolution Simulator");
-//        GridPane gridPane = new GridPane();
-//        gridPane.setGridLinesVisible(true);
 
 
         // main scene
-        Scene scene = new Scene(root, 1300.0f, 440.0f);
+        Scene scene = new Scene(root, 1300.0f, 1000.0f);
 
 
         boundedMap.setBackground(new Background(new BackgroundFill(Paint.valueOf("rgb(250,250,210)"), CornerRadii.EMPTY, Insets.EMPTY)));
@@ -92,42 +101,6 @@ public class App extends Application implements IPositionChangeObserver {
 
         boundedMap.setMinSize(10, 10);
 
-
-//        Label l = new Label("TEXT");
-//        VBox vBox = MapElement.draw(new Animal());
-//        l.setAlignment(Pos.CENTER);
-//        l.setMinWidth(50);
-//        l.setMinHeight(50);
-//        desert.add(vBox, 0, 1, 100, 5);
-
-
-//        for (int i = lowerLeft.getX(); i <= upperRight.getX(); i++) {
-//            for (int j = lowerLeft.getY(); j <= upperRight.getY(); j++) {
-//                Vector2d position = new Vector2d(i, j);
-//                VBox vBox = MapElement.draw(new Animal());
-////                if (engine.map.animals.get(position).size() > 0) {
-////                    vBox = MapElement.draw(engine.map.animals.get(position).get(0));
-////                } else if (engine.map.grass.get(position) != null) {
-////                    vBox = MapElement.draw(engine.map.animals.get(position).get(0));
-////                } else {
-////                    vBox = new VBox(10);
-////                }
-//                // checking if is on desert position;
-//                if (position.follows(jungleLowerLeft) && position.precedes(jungleUpperRight)) {
-//                    vBox.setStyle("-fx-background-color: rgb(14, 102, 13);");
-//                }
-//                vBox.setAlignment(Pos.CENTER);
-////                vBox.getChildren().add(new Label(position.toString()));
-//                gridPane.add(vBox, j,  + upperRight.getX() - i, 1, 1);
-//            }
-//        }
-
-
-//        gridPane.add(desert, 5, 5, upperRight.getX(), upperRight.getY());
-//        updateMap();
-
-
-//        positionChanged();
 
         root.getChildren().addAll(infoContainer, mapsWrapper);
 
@@ -139,15 +112,19 @@ public class App extends Application implements IPositionChangeObserver {
         if (map.boundedMap) {
             dataSeriesBoundedMapAnimal.getData().add(new XYChart.Data(map.ageCounter, map.animalsCounter));
             dataSeriesBoundedMapGrass.getData().add(new XYChart.Data(map.ageCounter, map.grassCounter));
+            dataSeriesBoundedMapAVGLifeLength.getData().add(new XYChart.Data(map.ageCounter, map.AVGLengthOfLifeAnimals));
+            dataSeriesBoundedMapAVGEnergy.getData().add(new XYChart.Data(map.ageCounter, map.AVGEnergyOfAliveAnimals));
         } else {
             dataSeriesUnboundedMapAnimal.getData().add(new XYChart.Data(map.ageCounter, map.animalsCounter));
             dataSeriesUnboundedMapGrass.getData().add(new XYChart.Data(map.ageCounter, map.grassCounter));
+            dataSeriesUnboundedMapAVGLifeLength.getData().add(new XYChart.Data(map.ageCounter, map.AVGLengthOfLifeAnimals));
+            dataSeriesUnboundedMapAVGEnergy.getData().add(new XYChart.Data(map.ageCounter, map.AVGEnergyOfAliveAnimals));
         }
     }
 
     private void createLineChart() {
         NumberAxis xAxis = new NumberAxis();
-        xAxis.setLabel("Day");
+        xAxis.setLabel("Age");
         // population
         NumberAxis yAxis = new NumberAxis();
         yAxis.setLabel("Population");
@@ -162,16 +139,24 @@ public class App extends Application implements IPositionChangeObserver {
         dataSeriesBoundedMapAnimal.setName("Bounded map Animals");
         this.dataSeriesBoundedMapGrass = new XYChart.Series();
         dataSeriesBoundedMapGrass.setName("Bounded map Grass");
-        // Unbounded map Series
+        this.dataSeriesBoundedMapAVGLifeLength = new XYChart.Series();
+        dataSeriesBoundedMapAVGLifeLength.setName("Unbounded map AVG Live Length");
+        this.dataSeriesBoundedMapAVGEnergy = new XYChart.Series();
+        dataSeriesBoundedMapAVGEnergy.setName("Unbounded map AVG Energy");
+
+
+//        // Unbounded map Series
         this.dataSeriesUnboundedMapAnimal = new XYChart.Series();
         dataSeriesUnboundedMapAnimal.setName("Unbounded map Animals");
         this.dataSeriesUnboundedMapGrass = new XYChart.Series();
         dataSeriesUnboundedMapGrass.setName("Unbounded map Grass");
+        this.dataSeriesUnboundedMapAVGLifeLength = new XYChart.Series();
+        dataSeriesUnboundedMapAVGLifeLength.setName("Unbounded map AVG Life Length");
+        this.dataSeriesUnboundedMapAVGEnergy = new XYChart.Series();
+        dataSeriesUnboundedMapAVGEnergy.setName("Unbounded map AVG Energy");
 
 
-        lineChart.getData().addAll(dataSeriesBoundedMapAnimal, dataSeriesBoundedMapGrass);
-        lineChart.getData().addAll(dataSeriesUnboundedMapAnimal, dataSeriesUnboundedMapGrass);
-
+        lineChart.getData().addAll(dataSeriesBoundedMapAnimal, dataSeriesBoundedMapGrass, dataSeriesBoundedMapAVGEnergy, dataSeriesBoundedMapAVGLifeLength,dataSeriesUnboundedMapAnimal, dataSeriesUnboundedMapGrass, dataSeriesUnboundedMapAVGEnergy, dataSeriesUnboundedMapAVGLifeLength);
         this.infoContainer.getChildren().add(lineChart);
     }
 
@@ -199,6 +184,20 @@ public class App extends Application implements IPositionChangeObserver {
                 pane.add(vBox, i, 1 + upperRight.getY() - j, 1, 1);
             }
         }
+    }
+
+
+    private void constructInfo() {
+        this.actualAgeWrapper = new VBox();
+        Label actualAgeLabel = new Label("Actual Age");
+        this.actualAgeWrapper.getChildren().add(actualAgeLabel);
+
+        this.boundedMapGenotypeDominantWrapper = new VBox();
+        Label boundedDominantLabel = new Label("Bounded Map Dominant");
+        boundedMapGenotypeDominantWrapper.getChildren().add(boundedDominantLabel);
+        this.unboundedMapGenotypeDominantWrapper = new VBox();
+        Label unboundedDominantLabel = new Label("Unbounded Map Dominant");
+        unboundedMapGenotypeDominantWrapper.getChildren().add(unboundedDominantLabel);
     }
 
     public void startSimulationEngine() {

@@ -15,14 +15,21 @@ public class SavannaMap implements IWorldMap {
     private final Vector2d jungleLowerLeft;
     private final Vector2d jungleUpperRight;
 
-    public final boolean boundedMap = true;
+    public final boolean boundedMap = false;
     public final int ageCost = 5;
     public final int startEnergy = 100;
     public final int minReproductionEnergy = 20;
     public int animalsCounter = 0;
     public int grassCounter = 0;
-    public int ageCounter = 0;
+    public int ageCounter = -1;
+    public int[] dominantsNumber = new int[8];
+    public String dominant = "";
     private IPositionChangeObserver observer;
+
+    public LinkedList<Animal> deadAnimalsList = new LinkedList<Animal>();
+    public int AVGEnergyOfAliveAnimals = 0;
+    public int AVGLengthOfLifeAnimals = 0;
+
 
     public LinkedHashMap<Vector2d, Grass> grass = new LinkedHashMap<>();
     // can be more than one Animal on same Coordinate, so keeping Animals in Linked list
@@ -36,31 +43,15 @@ public class SavannaMap implements IWorldMap {
         this.jungleLowerLeft = new Vector2d(45, 10);
         this.jungleUpperRight = new Vector2d(54, 20);
 
-//        Animal a2 = new Animal(this, new Vector2d(10, 20), 10000);
-//        Animal a3 = new Animal(this, new Vector2d(10, 20), 10000);
-//        Animal a4 = new Animal(this, new Vector2d(10, 20), 10000);
-//        Animal a5 = new Animal(this, new Vector2d(10, 20), 10000);
-//        Animal a6 = new Animal(this, new Vector2d(52, 20), 60);
-//        Animal a7 = new Animal(this, new Vector2d(32, 20), 60);
-//        Animal a8 = new Animal(this, new Vector2d(12, 20), 100);
-//        Animal a9 = new Animal(this, new Vector2d(52, 2), 60);
-//        Animal a10 = new Animal(this, new Vector2d(52, 23), 60);
-//        Animal a11 = new Animal(this, new Vector2d(52, 15), 60);
-        for (int i = 0; i < 3; i++) {
-            Animal a1 = new Animal(this, new Vector2d(50, 25), 1000);
+        for (int i = 0; i < 1; i++) {
+            Animal a1 = new Animal(this, new Vector2d(45, 25), 1000);
+            Animal a2 = new Animal(this, new Vector2d(35, 25), 1000);
             addAnimal(a1.position, a1);
+            addAnimal(a2.position, a2);
+            newAnimalUpdateCounter();
+            newAnimalDominant(a1);
+            newAnimalDominant(a2);
         }
-
-//        addAnimal(a2.position, a2);
-//        addAnimal(a3.position, a3);
-//        addAnimal(a4.position, a4);
-//        addAnimal(a5.position, a5);
-//        addAnimal(a6.position, a6);
-//        addAnimal(a7.position, a7);
-//        addAnimal(a8.position, a8);
-//        addAnimal(a9.position, a9);
-//        addAnimal(a10.position, a10);
-//        addAnimal(a11.position, a11);
     }
 
     public SavannaMap(Vector2d lowerLeft, Vector2d upperRight, Vector2d jungleLowerLeft, Vector2d jungleUpperRight) {
@@ -117,27 +108,18 @@ public class SavannaMap implements IWorldMap {
     }
 
 
-    public LinkedList<Animal> reproductionAnimals(Vector2d position) {
-        LinkedList<Animal> tmpLinkedList = top1EnergyAnimals(position);
-        // are at least 2 animals on the same coordinate;
-        if (tmpLinkedList.size() < 2 && animals.get(position).size() > 1) {
-            LinkedList<Animal> top2Animal = top2EnergyAnimals(position);
-            if (top2Animal.size() > 0) {
-                tmpLinkedList.add(top2EnergyAnimals(position).get(0));
-            }
-        }
-        return tmpLinkedList;
-    }
-
-
     public void nextAge() {
         removeDeadAnimals();
         spawnGrass();
 
         moveAllAnimals();
         eatGrass();
-//        reproduction();
+        reproduction();
         updateAgeCounter();
+
+        calculateDominatingGenotype();
+        calculateAVGEnergyOfAliveAnimals();
+        calculateAVGLengthOfLiveAnimals();
 
         // UI info to reload the map
         this.observer.positionChanged(this);
@@ -222,17 +204,28 @@ public class SavannaMap implements IWorldMap {
                 animalsList = nRandomAnimals(animalsList, 2);
                 // more than one animal with top energy -> taking randomly two from the size
                 if (animalsList.get(1).energy >= minReproductionEnergy && animalsList.get(0).energy >= minReproductionEnergy) {
-                    Animal newAnimal = animalsList.get(0).reproduction(animalsList.get(1));
+                    Animal newAnimal = animalsList.get(0).reproduction(animalsList.get(1), ageCounter);
                     animalsToBorn.add(newAnimal);
                 }
             }
         }
-
         for (Animal animal : animalsToBorn) {
-            animals.get(animal).add(animal);
+            animals.get(animal.position).add(animal);
             newAnimalUpdateCounter();
+            newAnimalDominant(animal);
         }
+    }
 
+    public LinkedList<Animal> reproductionAnimals(Vector2d position) {
+        LinkedList<Animal> tmpLinkedList = top1EnergyAnimals(position);
+        // are at least 2 animals on the same coordinate;
+        if (tmpLinkedList.size() < 2 && animals.get(position).size() > 1) {
+            LinkedList<Animal> top2Animal = top2EnergyAnimals(position);
+            if (top2Animal.size() > 0) {
+                tmpLinkedList.add(top2EnergyAnimals(position).get(0));
+            }
+        }
+        return tmpLinkedList;
     }
 
 
@@ -244,6 +237,14 @@ public class SavannaMap implements IWorldMap {
     @Override
     public boolean isOccupied(Vector2d position) {
         return objectAt(position) != null;
+    }
+
+    @Override
+    public IMapElement objectAt(Vector2d position) {
+        if (isOccupiedByAnimal(position)) {
+            return animals.get(position).get(0);
+        }
+        return grass.get(position);
     }
 
 
@@ -319,6 +320,9 @@ public class SavannaMap implements IWorldMap {
             Vector2d position = animal.position;
             removeAnimal(position, animal);
             deadAnimalUpdateCounter();
+            removeDeadAnimalDominant(animal);
+            animal.setDeathDate(ageCounter);
+            deadAnimalsList.add(animal);
         }
     }
 
@@ -345,14 +349,57 @@ public class SavannaMap implements IWorldMap {
         }
     }
 
-
-    @Override
-    public IMapElement objectAt(Vector2d position) {
-        if (isOccupiedByAnimal(position)) {
-            return animals.get(position).get(0);
+    private void newAnimalDominant(Animal animal) {
+        for (int i = 0; i < animal.genes.getGenotypeDominant().size(); i++) {
+            dominantsNumber[animal.genes.getGenotypeDominant().get(i)] += 1;
         }
-        return grass.get(position);
     }
+
+    private void removeDeadAnimalDominant(Animal animal) {
+        for (int i = 0; i < animal.genes.getGenotypeDominant().size(); i++) {
+            dominantsNumber[animal.genes.getGenotypeDominant().get(i)] -= 1;
+        }
+    }
+
+
+    private void calculateDominatingGenotype() {
+        int tmpMax = 0;
+        for (int n : dominantsNumber) {
+            tmpMax = Math.max(tmpMax, n);
+        }
+        // can be more than one dominating Genotype -> saving it As string
+        String result = "";
+        for (int i = 0; i < dominantsNumber.length; i++) {
+            if (dominantsNumber[i] == tmpMax) {
+                result += String.valueOf(dominantsNumber[i]) + " ";
+            }
+        }
+        dominant = result;
+    }
+
+
+    private void calculateAVGEnergyOfAliveAnimals() {
+        int energy = 0;
+        for (Vector2d position : animals.keySet()) {
+            for (Animal animal : animals.get(position)) {
+                energy += animal.energy;
+            }
+        }
+        AVGEnergyOfAliveAnimals = energy / animalsCounter;
+    }
+
+    private void calculateAVGLengthOfLiveAnimals() {
+        if (deadAnimalsList.size() == 0) {
+            AVGLengthOfLifeAnimals = 0;
+        } else {
+            int liveLength = 0;
+            for (Animal animal : deadAnimalsList) {
+                liveLength += animal.liveLength();
+            }
+            AVGLengthOfLifeAnimals = liveLength / deadAnimalsList.size();
+        }
+    }
+
 
     // at least one animal on this position;
     public boolean isOccupiedByAnimal(Vector2d position) {
@@ -372,7 +419,7 @@ public class SavannaMap implements IWorldMap {
     }
 
     private void deadAnimalUpdateCounter() {
-        this.animalsCounter += 1;
+        this.animalsCounter -= 1;
     }
 
     private void updateAgeCounter() {

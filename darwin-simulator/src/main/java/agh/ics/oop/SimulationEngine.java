@@ -42,11 +42,11 @@ public class SimulationEngine implements Runnable {
         map.addAnimals(startingAnimals);
 
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10000; i++) {
             map.nextAge();
 //            System.out.println("next Age");
             try {
-                Thread.sleep(100);
+                Thread.sleep(200);
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
