@@ -29,6 +29,7 @@ public class SavannaMap implements IWorldMap {
     public LinkedList<Animal> deadAnimalsList = new LinkedList<Animal>();
     public int AVGEnergyOfAliveAnimals = 0;
     public int AVGLengthOfLifeAnimals = 0;
+    public int AVGNumberOfChildrenAnimals = 0;
 
 
     public LinkedHashMap<Vector2d, Grass> grass = new LinkedHashMap<>();
@@ -43,7 +44,7 @@ public class SavannaMap implements IWorldMap {
         this.jungleLowerLeft = new Vector2d(45, 10);
         this.jungleUpperRight = new Vector2d(54, 20);
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 2; i++) {
             Animal a1 = new Animal(this, new Vector2d(45, 25), 1000);
             Animal a2 = new Animal(this, new Vector2d(35, 25), 1000);
             addAnimal(a1.position, a1);
@@ -120,6 +121,7 @@ public class SavannaMap implements IWorldMap {
         calculateDominatingGenotype();
         calculateAVGEnergyOfAliveAnimals();
         calculateAVGLengthOfLiveAnimals();
+        calculateAVGNumberOfChildrenAnimals();
 
         // UI info to reload the map
         this.observer.positionChanged(this);
@@ -260,6 +262,10 @@ public class SavannaMap implements IWorldMap {
         }
         // not bounded map
         else {
+            if (position.precedes(upperRight) && position.follows(lowerLeft)) {
+                animal.newPosition = position;
+                return true;
+            }
             int newX;
             int newY;
             // X: right -> left
@@ -371,7 +377,7 @@ public class SavannaMap implements IWorldMap {
         String result = "";
         for (int i = 0; i < dominantsNumber.length; i++) {
             if (dominantsNumber[i] == tmpMax) {
-                result += String.valueOf(dominantsNumber[i]) + " ";
+                result += String.valueOf(i) + " ";
             }
         }
         dominant = result;
@@ -398,6 +404,16 @@ public class SavannaMap implements IWorldMap {
             }
             AVGLengthOfLifeAnimals = liveLength / deadAnimalsList.size();
         }
+    }
+
+    private void calculateAVGNumberOfChildrenAnimals() {
+        int children = 0;
+        for (Vector2d position : animals.keySet()) {
+            for (Animal animal : animals.get(position)) {
+                children += animal.numberOfChildren;
+            }
+        }
+        AVGNumberOfChildrenAnimals = children / animalsCounter;
     }
 
 

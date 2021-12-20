@@ -14,6 +14,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
@@ -48,18 +49,59 @@ public class App extends Application implements IPositionChangeObserver {
     private XYChart.Series dataSeriesUnboundedMapAnimal;
     private XYChart.Series dataSeriesUnboundedMapAVGLifeLength;
     private XYChart.Series dataSeriesUnboundedMapAVGEnergy;
+    private XYChart.Series dataSeriesUnboundedMapAVGChildren;
+
     private XYChart.Series dataSeriesBoundedMapGrass;
     private XYChart.Series dataSeriesUnboundedMapGrass;
     private XYChart.Series dataSeriesBoundedMapAVGLifeLength;
     private XYChart.Series dataSeriesBoundedMapAVGEnergy;
+    private XYChart.Series dataSeriesBoundedMapAVGChildren;
+
 
     private VBox root;
     private VBox mapsWrapper;
+    private VBox additionalInfoWrapper;
 
-    private VBox boundedMapGenotypeDominantWrapper;
-    private VBox unboundedMapGenotypeDominantWrapper;
-    private VBox actualAgeWrapper;
+    private HBox boundedMapGenotypeDominantWrapper;
+    private HBox unboundedMapGenotypeDominantWrapper;
+    private Label boundedMapGenotypeDominant;
+    private Label unboundedMapGenotypeDominant;
 
+    private HBox boundedMapActualAgeWrapper;
+    private HBox unboundedMapActualAgeWrapper;
+
+    private HBox ToggleEnginesWrapper;
+    private Button boundedMapEngine;
+    private Button unboundedMapEngine;
+
+    private Label boundedMapActualAge;
+    private Label unboundedMapActualAge;
+
+    private Thread boundedMapEngineThread;
+    private boolean boundedMapEngineON = true;
+    private Button boundedMapEngineButton;
+
+    private Thread unboundedMapEngineThread;
+    private boolean unboundedMapEngineON = true;
+    private Button unboundedMapEngineButton;
+
+
+    public void boundedMapToggleEngineThread() {
+        boundedMapEngineON = !boundedMapEngineON;
+        if (boundedMapEngineON) {
+            boundedMapEngineThread.resume();
+        } else {
+            boundedMapEngineThread.suspend();
+        }
+    }
+
+    public void unboundedMapToggleEngineThread() {
+        unboundedMapEngineON = !unboundedMapEngineON;
+        if (unboundedMapEngineON) {
+        } else {
+            unboundedMapEngineThread.checkAccess();
+        }
+    }
 
     public void start(Stage stage) {
         HBox infoContainer = new HBox();
@@ -85,7 +127,8 @@ public class App extends Application implements IPositionChangeObserver {
 
 
         // running
-        startSimulationEngine();
+        startSimulationEngine(false);
+//        startSimulationEngine(false);
 
         // running engine
         stage.setTitle("Evolution Simulator");
@@ -114,11 +157,14 @@ public class App extends Application implements IPositionChangeObserver {
             dataSeriesBoundedMapGrass.getData().add(new XYChart.Data(map.ageCounter, map.grassCounter));
             dataSeriesBoundedMapAVGLifeLength.getData().add(new XYChart.Data(map.ageCounter, map.AVGLengthOfLifeAnimals));
             dataSeriesBoundedMapAVGEnergy.getData().add(new XYChart.Data(map.ageCounter, map.AVGEnergyOfAliveAnimals));
+            dataSeriesBoundedMapAVGChildren.getData().add(new XYChart.Data(map.ageCounter, map.AVGNumberOfChildrenAnimals));
+
         } else {
             dataSeriesUnboundedMapAnimal.getData().add(new XYChart.Data(map.ageCounter, map.animalsCounter));
             dataSeriesUnboundedMapGrass.getData().add(new XYChart.Data(map.ageCounter, map.grassCounter));
             dataSeriesUnboundedMapAVGLifeLength.getData().add(new XYChart.Data(map.ageCounter, map.AVGLengthOfLifeAnimals));
             dataSeriesUnboundedMapAVGEnergy.getData().add(new XYChart.Data(map.ageCounter, map.AVGEnergyOfAliveAnimals));
+            dataSeriesUnboundedMapAVGChildren.getData().add(new XYChart.Data(map.ageCounter, map.AVGNumberOfChildrenAnimals));
         }
     }
 
@@ -140,9 +186,11 @@ public class App extends Application implements IPositionChangeObserver {
         this.dataSeriesBoundedMapGrass = new XYChart.Series();
         dataSeriesBoundedMapGrass.setName("Bounded map Grass");
         this.dataSeriesBoundedMapAVGLifeLength = new XYChart.Series();
-        dataSeriesBoundedMapAVGLifeLength.setName("Unbounded map AVG Live Length");
+        dataSeriesBoundedMapAVGLifeLength.setName("Bounded map AVG Live Length");
         this.dataSeriesBoundedMapAVGEnergy = new XYChart.Series();
-        dataSeriesBoundedMapAVGEnergy.setName("Unbounded map AVG Energy");
+        dataSeriesBoundedMapAVGEnergy.setName("Bounded map AVG Energy");
+        this.dataSeriesBoundedMapAVGChildren = new XYChart.Series();
+        dataSeriesBoundedMapAVGChildren.setName("Bounded map AVG Children Number");
 
 
 //        // Unbounded map Series
@@ -154,9 +202,11 @@ public class App extends Application implements IPositionChangeObserver {
         dataSeriesUnboundedMapAVGLifeLength.setName("Unbounded map AVG Life Length");
         this.dataSeriesUnboundedMapAVGEnergy = new XYChart.Series();
         dataSeriesUnboundedMapAVGEnergy.setName("Unbounded map AVG Energy");
+        this.dataSeriesUnboundedMapAVGChildren = new XYChart.Series();
+        dataSeriesUnboundedMapAVGChildren.setName("Unbounded map AVG Children Number");
 
 
-        lineChart.getData().addAll(dataSeriesBoundedMapAnimal, dataSeriesBoundedMapGrass, dataSeriesBoundedMapAVGEnergy, dataSeriesBoundedMapAVGLifeLength,dataSeriesUnboundedMapAnimal, dataSeriesUnboundedMapGrass, dataSeriesUnboundedMapAVGEnergy, dataSeriesUnboundedMapAVGLifeLength);
+        lineChart.getData().addAll(dataSeriesBoundedMapAnimal, dataSeriesBoundedMapGrass, dataSeriesBoundedMapAVGEnergy, dataSeriesBoundedMapAVGLifeLength, dataSeriesBoundedMapAVGChildren, dataSeriesUnboundedMapAnimal, dataSeriesUnboundedMapGrass, dataSeriesUnboundedMapAVGEnergy, dataSeriesUnboundedMapAVGLifeLength, dataSeriesUnboundedMapAVGChildren);
         this.infoContainer.getChildren().add(lineChart);
     }
 
@@ -188,22 +238,66 @@ public class App extends Application implements IPositionChangeObserver {
 
 
     private void constructInfo() {
-        this.actualAgeWrapper = new VBox();
-        Label actualAgeLabel = new Label("Actual Age");
-        this.actualAgeWrapper.getChildren().add(actualAgeLabel);
+        this.additionalInfoWrapper = new VBox();
 
-        this.boundedMapGenotypeDominantWrapper = new VBox();
-        Label boundedDominantLabel = new Label("Bounded Map Dominant");
-        boundedMapGenotypeDominantWrapper.getChildren().add(boundedDominantLabel);
-        this.unboundedMapGenotypeDominantWrapper = new VBox();
-        Label unboundedDominantLabel = new Label("Unbounded Map Dominant");
-        unboundedMapGenotypeDominantWrapper.getChildren().add(unboundedDominantLabel);
+        this.ToggleEnginesWrapper = new HBox();
+        this.boundedMapEngineButton = new Button("Start / Resume Bounded Map");
+        this.unboundedMapEngineButton = new Button("Start / Resume Unbounded Map");
+        this.ToggleEnginesWrapper.getChildren().addAll(boundedMapEngineButton, unboundedMapEngineButton);
+
+        this.boundedMapActualAgeWrapper = new HBox();
+        Label boundedMapActualAgeLabel = new Label("Bounded Map Actual Age: ");
+        this.boundedMapActualAge = new Label("");
+        this.boundedMapGenotypeDominantWrapper = new HBox();
+        Label boundedDominantLabel = new Label("Bounded Map Dominant: ");
+        this.boundedMapGenotypeDominant = new Label();
+        boundedMapGenotypeDominant.setText("");
+
+        boundedMapActualAgeWrapper.getChildren().addAll(boundedMapActualAgeLabel, boundedMapActualAge);
+        boundedMapGenotypeDominantWrapper.getChildren().addAll(boundedDominantLabel, boundedMapGenotypeDominant);
+
+        this.unboundedMapActualAgeWrapper = new HBox();
+        Label unboundedMapActualAgeLabel = new Label("Unbounded Map Actual Age: ");
+        this.unboundedMapActualAge = new Label("");
+        this.unboundedMapGenotypeDominantWrapper = new HBox();
+        Label unboundedDominantLabel = new Label("Unbounded Map Dominant: ");
+        this.unboundedMapGenotypeDominant = new Label();
+        unboundedMapGenotypeDominant.setText("");
+
+        unboundedMapActualAgeWrapper.getChildren().addAll(unboundedMapActualAgeLabel, unboundedMapActualAge);
+        unboundedMapGenotypeDominantWrapper.getChildren().addAll(unboundedDominantLabel, unboundedMapGenotypeDominant);
+
+
+        additionalInfoWrapper.getChildren().addAll(boundedMapActualAgeWrapper, boundedMapGenotypeDominantWrapper, unboundedMapActualAgeWrapper, unboundedMapGenotypeDominantWrapper, ToggleEnginesWrapper);
+        infoContainer.getChildren().add(additionalInfoWrapper);
+
+
     }
 
-    public void startSimulationEngine() {
-        this.engine = new SimulationEngine(this);
-        Thread engineThread = new Thread(engine);
-        engineThread.start();
+    public void startSimulationEngine(boolean bounded) {
+        if (bounded) {
+            this.engine = new SimulationEngine(this);
+            Thread boundedMapEngineThread = new Thread(engine);
+            this.boundedMapEngineThread = boundedMapEngineThread;
+            boundedMapEngineButton.setOnAction(e -> boundedMapToggleEngineThread());
+            boundedMapEngineThread.start();
+        } else {
+            this.engine = new SimulationEngine(this);
+            Thread unboundedMapEngineThread = new Thread(engine);
+            this.unboundedMapEngineThread = unboundedMapEngineThread;
+            unboundedMapEngineButton.setOnAction(e -> unboundedMapToggleEngineThread());
+            unboundedMapEngineThread.start();
+        }
+    }
+
+    public void additionalInfoUpdate(SavannaMap map) {
+        if (map.boundedMap) {
+            boundedMapGenotypeDominant.setText(map.dominant);
+            boundedMapActualAge.setText(String.valueOf(map.ageCounter));
+        } else {
+            unboundedMapGenotypeDominant.setText(map.dominant);
+            unboundedMapActualAge.setText(String.valueOf(map.ageCounter));
+        }
     }
 
     @Override
@@ -211,6 +305,8 @@ public class App extends Application implements IPositionChangeObserver {
         Platform.runLater(() -> {
             updateMap(map);
             lineChartUpdate(map);
+            additionalInfoUpdate(map);
+
         });
     }
 
