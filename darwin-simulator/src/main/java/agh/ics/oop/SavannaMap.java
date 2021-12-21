@@ -10,15 +10,16 @@ import java.util.*;
 
 
 public class SavannaMap implements IWorldMap {
-    private final Vector2d lowerLeft;
-    private final Vector2d upperRight;
-    private final Vector2d jungleLowerLeft;
-    private final Vector2d jungleUpperRight;
+    private Vector2d lowerLeft;
+    private Vector2d upperRight;
+    private Vector2d jungleLowerLeft;
+    private Vector2d jungleUpperRight;
+    public boolean boundedMap = false;
+    public int ageCost = 5;
+    public int startEnergy = 100;
+    public int minReproductionEnergy;
+    public int grassEnergy;
 
-    public final boolean boundedMap = false;
-    public final int ageCost = 5;
-    public final int startEnergy = 100;
-    public final int minReproductionEnergy = 20;
     public int animalsCounter = 0;
     public int grassCounter = 0;
     public int ageCounter = -1;
@@ -57,11 +58,27 @@ public class SavannaMap implements IWorldMap {
         }
     }
 
-    public SavannaMap(Vector2d lowerLeft, Vector2d upperRight, Vector2d jungleLowerLeft, Vector2d jungleUpperRight) {
+    public SavannaMap(IPositionChangeObserver observer, boolean boundedMap, Vector2d lowerLeft, Vector2d upperRight, Vector2d jungleLowerLeft, Vector2d jungleUpperRight, int ageCost, int grassEnergy, int animalsNumber, int startEnergy) {
+        this.observer = observer;
+        this.boundedMap = boundedMap;
         this.lowerLeft = lowerLeft;
         this.upperRight = upperRight;
         this.jungleLowerLeft = jungleLowerLeft;
         this.jungleUpperRight = jungleUpperRight;
+        this.ageCost = ageCost;
+        this.grassEnergy = grassEnergy;
+        this.startEnergy = startEnergy;
+        this.minReproductionEnergy = startEnergy/2;
+        // insterting random animals into map
+        for (int i=0;i< animalsNumber; i++){
+            int x = (int) (Math.random() * (upperRight.getX() - lowerLeft.getX() + 1)) + lowerLeft.getX();
+            int y = (int) (Math.random() * (upperRight.getY() - lowerLeft.getY() + 1)) + lowerLeft.getY();
+            Vector2d position = new Vector2d(x,y);
+            Animal animal = new Animal(this,position, startEnergy);
+            addAnimal(position, animal);
+            newAnimalUpdateCounter();
+            newAnimalDominant(animal);
+        }
     }
 
     public LinkedList<Animal> allAnimalsWithGivenEnergy(int energy, Vector2d position) {
@@ -123,7 +140,7 @@ public class SavannaMap implements IWorldMap {
             magicReproduction();
         }
 //        else {
-            reproduction();
+        reproduction();
 //        }
 
         updateAgeCounter();
@@ -222,7 +239,7 @@ public class SavannaMap implements IWorldMap {
             }
         }
         for (Animal animal : animalsToBorn) {
-            addAnimal(animal.position,animal);
+            addAnimal(animal.position, animal);
             newAnimalUpdateCounter();
             newAnimalDominant(animal);
         }
@@ -248,7 +265,7 @@ public class SavannaMap implements IWorldMap {
             }
         }
         for (Animal animal : animalsToBorn) {
-            addAnimal(animal.position,animal);
+            addAnimal(animal.position, animal);
             newAnimalUpdateCounter();
             newAnimalDominant(animal);
         }

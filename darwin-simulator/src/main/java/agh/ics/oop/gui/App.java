@@ -9,6 +9,7 @@ import agh.ics.oop.*;
 import javafx.application.Application;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.GraphicsContext;
@@ -28,9 +29,11 @@ import javax.swing.text.html.ImageView;
 import java.awt.*;
 
 import javafx.geometry.Insets;
+import javafx.scene.control.TextField;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.LinkedList;
 import java.util.Vector;
 
 public class App extends Application implements IPositionChangeObserver {
@@ -39,10 +42,19 @@ public class App extends Application implements IPositionChangeObserver {
     private GridPane unboundedMap;
     private SimulationEngine engine;
 
-    Vector2d lowerLeft = new Vector2d(0, 0);
-    Vector2d upperRight = new Vector2d(99, 30);
-    Vector2d jungleLowerLeft = new Vector2d(45, 10);
-    Vector2d jungleUpperRight = new Vector2d(54, 20);
+    // map properties
+    public Vector2d lowerLeft;
+    public Vector2d upperRight;
+    public Vector2d jungleLowerLeft;
+    public Vector2d jungleUpperRight;
+    public int ageCost;
+    public int grassEnergy;
+    public int animalsNumber;
+    public int startEnergy;
+    public int width;
+    public int height;
+
+    Stage stage;
 
     private HBox infoContainer;
     private LineChart lineChart;
@@ -57,7 +69,6 @@ public class App extends Application implements IPositionChangeObserver {
     private XYChart.Series dataSeriesBoundedMapAVGLifeLength;
     private XYChart.Series dataSeriesBoundedMapAVGEnergy;
     private XYChart.Series dataSeriesBoundedMapAVGChildren;
-
 
     private VBox root;
     private VBox mapsWrapper;
@@ -95,8 +106,6 @@ public class App extends Application implements IPositionChangeObserver {
 
     public void boundedMapToggleEngineThread() {
         boundedMapEngineON = !boundedMapEngineON;
-        System.out.println("bounded ON");
-
         if (boundedMapEngineON) {
             boundedMapEngineThread.resume();
         } else {
@@ -113,16 +122,120 @@ public class App extends Application implements IPositionChangeObserver {
         }
     }
 
+
+    public void mainMenuScene() {
+        VBox mainMenuWrapper = new VBox();
+        GridPane mainMenuGridPane = new GridPane();
+        mainMenuGridPane.setVgap(5);
+        mainMenuGridPane.setHgap(10);
+
+        TextField widthInput = new TextField("100");
+        TextField heightInput = new TextField("30");
+        TextField animalsInput = new TextField("5");
+        TextField startEnergyInput = new TextField("150");
+        TextField ageCostInput = new TextField("1");
+        TextField grassEnergyInput = new TextField("15");
+        TextField jungleRatioInput = new TextField("0.3");
+
+        mainMenuGridPane.setPadding(new Insets(10, 0, 7, 15));
+        mainMenuGridPane.add(new Label("width"), 0, 0);
+        mainMenuGridPane.add(widthInput, 1, 0);
+        mainMenuGridPane.add(new Label("height"), 0, 1);
+        mainMenuGridPane.add(heightInput, 1, 1);
+        mainMenuGridPane.add(new Label("animals"), 0, 2);
+        mainMenuGridPane.add(animalsInput, 1, 2);
+        mainMenuGridPane.add(new Label("starting energy"), 0, 3);
+        mainMenuGridPane.add(startEnergyInput, 1, 3);
+        mainMenuGridPane.add(new Label("age cost"), 0, 4);
+        mainMenuGridPane.add(ageCostInput, 1, 4);
+        mainMenuGridPane.add(new Label("grass energy"), 0, 5);
+        mainMenuGridPane.add(grassEnergyInput, 1, 5);
+        mainMenuGridPane.add(new Label("jungle ratio (0-1)"), 0, 6);
+        mainMenuGridPane.add(jungleRatioInput, 1, 6);
+        Button startSimulationButton = new Button("Start Simulation");
+        Label mainMenuLabel = new Label("Set Simulation Properties");
+        mainMenuWrapper.getChildren().addAll(mainMenuLabel, mainMenuGridPane, startSimulationButton);
+        mainMenuWrapper.setAlignment(Pos.CENTER);
+
+        Scene mainMenu = new Scene(mainMenuWrapper, 300, 300);
+        stage.setScene(mainMenu);
+        stage.show();
+        startSimulationButton.setOnMouseClicked((e) -> validateAndStartSimulation(widthInput, heightInput, animalsInput, startEnergyInput, ageCostInput, grassEnergyInput, jungleRatioInput));
+    }
+
+    public void validateAndStartSimulation(TextField widthInput, TextField heightInput, TextField animalsInput, TextField startEnergyInput, TextField ageCostInput, TextField grassEnergyInput, TextField jungleRatioInput) {
+        if (Integer.parseInt(widthInput.getText()) <= 0) {
+            throw new IllegalArgumentException(widthInput.getText() + "width must be a positive number!");
+        }
+        if (Integer.parseInt(heightInput.getText()) <= 0) {
+            throw new IllegalArgumentException(heightInput.getText() + " height must be a positive number!");
+        }
+        if (Integer.parseInt(animalsInput.getText()) <= 0) {
+            throw new IllegalArgumentException(widthInput.getText() + " number of animals must be a positive number!");
+        }
+        if (Integer.parseInt(startEnergyInput.getText()) <= 0) {
+            throw new IllegalArgumentException(startEnergyInput.getText() + " start energy must be a positive number!");
+        }
+        if (Integer.parseInt(ageCostInput.getText()) <= 0) {
+            throw new IllegalArgumentException(ageCostInput.getText() + " age cost must be a positive number!");
+        }
+        if (Integer.parseInt(grassEnergyInput.getText()) <= 0) {
+            throw new IllegalArgumentException(widthInput.getText() + " grass energy must be a positive number!");
+        }
+        if ((Float.parseFloat(jungleRatioInput.getText()) <= 0 || Float.parseFloat(jungleRatioInput.getText()) >= 1)) {
+            throw new IllegalArgumentException(jungleRatioInput.getText() + " jungle ratio must be a number between 0 and 1!");
+        }
+
+        int width = Integer.parseInt(widthInput.getText());
+        int height = Integer.parseInt(heightInput.getText());
+        int animalsNumber = Integer.parseInt(animalsInput.getText());
+        int startEnergy = Integer.parseInt(startEnergyInput.getText());
+        int ageCost = Integer.parseInt(ageCostInput.getText());
+        int grassEnergy = Integer.parseInt(grassEnergyInput.getText());
+        float jungleRatio = Float.parseFloat(jungleRatioInput.getText());
+        setMapProperties(width, height, animalsNumber, startEnergy, ageCost, grassEnergy, jungleRatio);
+        // running Simulation scene and starting two simulations
+        runSimulationScene();
+    }
+
+
+    private void setMapProperties(int width, int height, int animals, int startEnergy, int ageCost, int grassEnergy, float jungleRatio) {
+        this.lowerLeft = new Vector2d(0, 0);
+        this.upperRight = new Vector2d(width, height);
+
+        // jungle map center 1/2 difference X -> left, right, bottom up 1/2 difference Y
+        int jungleHalfX = (int) Math.round((double) (width/2) *  (double) jungleRatio) / 2;
+        int jungleHalfY = (int) Math.round((double) (height/2) *  (double) jungleRatio) / 2;
+
+        this.jungleLowerLeft = new Vector2d((width/2) - jungleHalfX, (height/2) - jungleHalfY);
+        this.jungleUpperRight = new Vector2d((width/2) + jungleHalfX, (height/2) + jungleHalfY);
+        this.ageCost = ageCost;
+        this.grassEnergy = grassEnergy;
+        this.animalsNumber = animals;
+        this.startEnergy = startEnergy;
+        this.width = width;
+        this.height = height;
+    }
+
     public void start(Stage stage) {
+        this.stage = stage;
+        // main menu
+        mainMenuScene();
+
+    }
+
+
+    private void runSimulationScene() {
         HBox infoContainer = new HBox();
         this.infoContainer = infoContainer;
+
         VBox root = new VBox();
         this.root = root;
 
         // lineChart
         createLineChart();
 
-        // total age dominant
+        // total age dominant labels with info
         constructInfo();
 
         // bounded map gird
@@ -130,34 +243,46 @@ public class App extends Application implements IPositionChangeObserver {
         this.boundedMap = boundedMap;
         //unbounded map grid
         GridPane unboundedMap = new GridPane();
-        this.unboundedMap = boundedMap;
+        this.unboundedMap = unboundedMap;
+
         VBox mapsWrapper = new VBox();
         this.mapsWrapper = mapsWrapper;
+        mapsWrapper.setBackground(new Background(new BackgroundFill(Paint.valueOf("rgb(0,0,0)"), CornerRadii.EMPTY, Insets.EMPTY)));
         mapsWrapper.getChildren().addAll(boundedMap, unboundedMap);
 
-        // running
+        // bounded map simulation engine
+
         startSimulationEngine(false);
-//        startSimulationEngine(false);
+        startSimulationEngine(true);
 
         // running engine
         stage.setTitle("Evolution Simulator");
+        mapsWrapper.setStyle("-fx-background-color: rgb(10, 10, 10);");
+        mapsWrapper.setAlignment(Pos.CENTER);
+        mapsWrapper.setSpacing(10);
+
 
 
         // main scene
-        Scene scene = new Scene(root, 1300.0f, 1000.0f);
+        Scene scene = new Scene(root, Math.min(1200,width*21), 300+(2*height*10)+30);
 
 
         boundedMap.setBackground(new Background(new BackgroundFill(Paint.valueOf("rgb(250,250,210)"), CornerRadii.EMPTY, Insets.EMPTY)));
-        boundedMap.setMinWidth(1300.0f);
-        boundedMap.setMinHeight(440.0f);
+        boundedMap.setMinWidth(width*10);
+        boundedMap.setMinHeight(height*10);
+        boundedMap.setMaxHeight(height*10+10);
+        boundedMap.setMaxWidth(width*10);
 
-        boundedMap.setMinSize(10, 10);
+
+        unboundedMap.setBackground(new Background(new BackgroundFill(Paint.valueOf("rgb(250,250,210)"), CornerRadii.EMPTY, Insets.EMPTY)));
+        unboundedMap.setMinWidth(width*10);
+        unboundedMap.setMinHeight(height*10);
+        unboundedMap.setMaxHeight(height*10+10);
+        unboundedMap.setMaxWidth(width*10);
 
 
         root.getChildren().addAll(infoContainer, mapsWrapper);
-
         stage.setScene(scene);
-        stage.show();
     }
 
     private void lineChartUpdate(SavannaMap map) {
@@ -243,7 +368,7 @@ public class App extends Application implements IPositionChangeObserver {
                 if (map.isOccupiedByAnimal(position)) {
                     Animal animalToFollow = map.animalAt(position);
                     // following animal
-                    vBox.setOnMouseClicked((e) -> animalInfo(animalToFollow,map.boundedMap));
+                    vBox.setOnMouseClicked((e) -> animalInfo(animalToFollow, map.boundedMap));
                 }
                 // checking if is on desert position;
                 if (position.follows(jungleLowerLeft) && position.precedes(jungleUpperRight)) {
@@ -263,28 +388,23 @@ public class App extends Application implements IPositionChangeObserver {
         // condition Engine Thread suspended
         if ((!boundedMapEngineON) && boundedMap) {
             flag = true;
-            if (boundedMap) {
-                animalWindow.setTitle("Bounded Map Animal");
-            } else {
-                animalWindow.setTitle("Unbounded Map Animal");
-            }
+            animalWindow.setTitle("Bounded Map Animal");
             // starting to follow animal
             this.boundedMapAnimalToFollow = animal;
             this.boundedMapAnimalInfo = allAnimalInfo;
 
         } else if ((!unboundedMapEngineON) && (!boundedMap)) {
             flag = true;
-            if (boundedMap) {
-                animalWindow.setTitle("Bounded Map Animal");
-            } else {
-                animalWindow.setTitle("Unbounded Map Animal");
-            }
+            animalWindow.setTitle("Unbounded Map Animal");
             // starting to follow animal
             this.unboundedMapAnimalToFollow = animal;
             this.unboundedMapAnimalInfo = allAnimalInfo;
         }
 
         if (flag) {
+            if (boundedMap) {
+                System.out.println(boundedMap);
+            }
             allAnimalInfo.setAlignment(Pos.CENTER);
             updateAnimalFollowingScene(allAnimalInfo, animal);
             StackPane stackPane = new StackPane();
@@ -295,7 +415,7 @@ public class App extends Application implements IPositionChangeObserver {
         }
     }
 
-    public void updateAnimalFollowingScene(VBox allAnimalInfo, Animal animal){
+    public void updateAnimalFollowingScene(VBox allAnimalInfo, Animal animal) {
         allAnimalInfo.getChildren().clear();
         // animal genotype
         HBox animalGenotype = new HBox();
@@ -306,30 +426,29 @@ public class App extends Application implements IPositionChangeObserver {
         }
         Label labelGenotypeValue = new Label(AnimalGenotypeString);
         animalGenotype.setAlignment(Pos.CENTER);
-        animalGenotype.getChildren().addAll(labelGenotype,labelGenotypeValue);
+        animalGenotype.getChildren().addAll(labelGenotype, labelGenotypeValue);
 
         // animal children number
         HBox animalChildren = new HBox();
         Label labelChildren = new Label("Animal number of children: ");
         Label labelChildrenValue = new Label(String.valueOf(animal.numberOfChildren));
         animalChildren.setAlignment(Pos.CENTER);
-        animalChildren.getChildren().addAll(labelChildren,labelChildrenValue);
+        animalChildren.getChildren().addAll(labelChildren, labelChildrenValue);
 
 
         // animal age of death
         HBox animalDeath = new HBox();
         Label labelDeath = new Label("Animal death age: ");
         Label labelDeathValue = new Label();
-        if (animal.deathDate == -1){
+        if (animal.deathDate == -1) {
             labelDeathValue.setText("Still alive");
-        }
-        else {
+        } else {
             labelDeathValue.setText(String.valueOf(animal.deathDate));
         }
         animalDeath.setAlignment(Pos.CENTER);
-        animalDeath.getChildren().addAll(labelDeath,labelDeathValue);
+        animalDeath.getChildren().addAll(labelDeath, labelDeathValue);
 
-        allAnimalInfo.getChildren().addAll(animalGenotype,animalChildren,animalDeath);
+        allAnimalInfo.getChildren().addAll(animalGenotype, animalChildren, animalDeath);
     }
 
 
@@ -364,6 +483,8 @@ public class App extends Application implements IPositionChangeObserver {
         unboundedMapGenotypeDominantWrapper.getChildren().addAll(unboundedDominantLabel, unboundedMapGenotypeDominant);
 
 
+        additionalInfoWrapper.setAlignment(Pos.CENTER);
+        additionalInfoWrapper.setSpacing(10);
         additionalInfoWrapper.getChildren().addAll(boundedMapActualAgeWrapper, boundedMapGenotypeDominantWrapper, unboundedMapActualAgeWrapper, unboundedMapGenotypeDominantWrapper, ToggleEnginesWrapper);
         infoContainer.getChildren().add(additionalInfoWrapper);
 
@@ -372,14 +493,14 @@ public class App extends Application implements IPositionChangeObserver {
 
     public void startSimulationEngine(boolean bounded) {
         if (bounded) {
-            this.engine = new SimulationEngine(this);
+            engine = new SimulationEngine(this, bounded, lowerLeft, upperRight, jungleLowerLeft, jungleUpperRight, ageCost, grassEnergy, animalsNumber, startEnergy);
             Thread boundedMapEngineThread = new Thread(engine);
             this.boundedMapEngineThread = boundedMapEngineThread;
 
             boundedMapEngineButton.setOnMouseClicked(e -> boundedMapToggleEngineThread());
             boundedMapEngineThread.start();
         } else {
-            this.engine = new SimulationEngine(this);
+            engine = new SimulationEngine(this, bounded, lowerLeft, upperRight, jungleLowerLeft, jungleUpperRight, ageCost, grassEnergy, animalsNumber, startEnergy);
             Thread unboundedMapEngineThread = new Thread(engine);
             this.unboundedMapEngineThread = unboundedMapEngineThread;
             unboundedMapEngineButton.setOnMouseClicked(e -> unboundedMapToggleEngineThread());
@@ -405,13 +526,12 @@ public class App extends Application implements IPositionChangeObserver {
             additionalInfoUpdate(map);
             if (map.boundedMap) {
                 // checking if App is following animal
-                if ( boundedMapAnimalToFollow != null){
-                    updateAnimalFollowingScene(this.boundedMapAnimalInfo,this.boundedMapAnimalToFollow);
+                if (boundedMapAnimalToFollow != null) {
+                    updateAnimalFollowingScene(this.boundedMapAnimalInfo, this.boundedMapAnimalToFollow);
                 }
-            }
-            else {
+            } else {
                 if (unboundedMapAnimalToFollow != null) {
-                    updateAnimalFollowingScene(this.unboundedMapAnimalInfo,this.unboundedMapAnimalToFollow);
+                    updateAnimalFollowingScene(this.unboundedMapAnimalInfo, this.unboundedMapAnimalToFollow);
                 }
             }
         });

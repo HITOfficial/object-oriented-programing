@@ -11,9 +11,9 @@ public class MapElement {
     public static VBox draw(IMapElement type) {
         VBox vBox = new VBox();
         Circle circle = new Circle();
-        circle.setCenterX(10.0f);
-        circle.setCenterY(10.0f);
-        circle.setRadius(5.0f);
+        circle.setCenterX(10);
+        circle.setCenterY(10);
+        circle.setRadius(5);
 
         if (type == null) {
             circle.setFill(Color.TRANSPARENT);
