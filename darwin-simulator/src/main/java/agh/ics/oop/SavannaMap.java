@@ -15,7 +15,7 @@ public class SavannaMap implements IWorldMap {
     private final Vector2d jungleLowerLeft;
     private final Vector2d jungleUpperRight;
 
-    public final boolean boundedMap = false;
+    public final boolean boundedMap = true;
     public final int ageCost = 5;
     public final int startEnergy = 100;
     public final int minReproductionEnergy = 20;
@@ -380,7 +380,12 @@ public class SavannaMap implements IWorldMap {
                 result += String.valueOf(i) + " ";
             }
         }
-        dominant = result;
+        if (tmpMax > 0) {
+            dominant = result;
+        }
+        else {
+            dominant = "no animals left";
+        }
     }
 
 
@@ -391,7 +396,12 @@ public class SavannaMap implements IWorldMap {
                 energy += animal.energy;
             }
         }
-        AVGEnergyOfAliveAnimals = energy / animalsCounter;
+        if (animalsCounter > 0) {
+            AVGEnergyOfAliveAnimals = energy / animalsCounter;
+        }
+        else {
+            AVGEnergyOfAliveAnimals = 0;
+        }
     }
 
     private void calculateAVGLengthOfLiveAnimals() {
@@ -413,13 +423,27 @@ public class SavannaMap implements IWorldMap {
                 children += animal.numberOfChildren;
             }
         }
-        AVGNumberOfChildrenAnimals = children / animalsCounter;
+        if (animalsCounter > 0) {
+            AVGNumberOfChildrenAnimals = children / animalsCounter;
+        }
+        else {
+            AVGNumberOfChildrenAnimals = 0;
+        }
     }
 
 
     // at least one animal on this position;
     public boolean isOccupiedByAnimal(Vector2d position) {
         return animals.get(position) != null && animals.get(position).size() > 0;
+    }
+
+    public Animal animalAt(Vector2d position) {
+        if (isOccupiedByAnimal(position)) {
+            return animals.get(position).get(0);
+        }
+        else {
+            return null;
+        }
     }
 
     private void newGrassUpdateCounter() {

@@ -25,6 +25,7 @@ public class Animal implements IMapElement {
     public Animal() {
         numberOfChildren = 0;
         bornDate = 0;
+        deathDate = -1;
         direction = MapDirection.NORTH;
         position = new Vector2d(2, 2);
         genes = new Genes();
@@ -89,6 +90,8 @@ public class Animal implements IMapElement {
         other.updateEnergy((int) ((-1) * 0.25 * other.energy));
         Animal childAnimal = new Animal(map, new Vector2d(other.position.getX(), other.position.getY()), childEnergy, bornDate);
         childAnimal.genes = new Genes(this.genes.getGenes(), other.genes.getGenes(), this.energy, other.energy);
+        this.numberOfChildren += 1;
+        other.numberOfChildren += 1;
         return childAnimal;
     }
 

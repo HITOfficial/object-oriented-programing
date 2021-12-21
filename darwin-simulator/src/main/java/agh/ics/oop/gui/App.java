@@ -9,6 +9,7 @@ import agh.ics.oop.*;
 import javafx.application.Application;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.chart.LineChart;
@@ -85,18 +86,30 @@ public class App extends Application implements IPositionChangeObserver {
     private boolean unboundedMapEngineON = true;
     private Button unboundedMapEngineButton;
 
+    public Animal boundedMapAnimalToFollow = null;
+    public VBox boundedMapAnimalInfo = null;
+
+    public Animal unboundedMapAnimalToFollow = null;
+    public VBox unboundedMapAnimalInfo = null;
+
 
     public void boundedMapToggleEngineThread() {
         boundedMapEngineON = !boundedMapEngineON;
+        System.out.println("bounded ON");
+
         if (boundedMapEngineON) {
             boundedMapEngineThread.resume();
+            System.out.println("bounded ON");
         } else {
             boundedMapEngineThread.suspend();
+            System.out.println("bounded Off");
         }
     }
 
     public void unboundedMapToggleEngineThread() {
         unboundedMapEngineON = !unboundedMapEngineON;
+        System.out.println("unbounded ON");
+
         if (unboundedMapEngineON) {
         } else {
             unboundedMapEngineThread.checkAccess();
@@ -111,9 +124,9 @@ public class App extends Application implements IPositionChangeObserver {
 
         // lineChart
         createLineChart();
-        // dominants info
-        constructInfo();
 
+        // total age dominant
+        constructInfo();
 
         // bounded map gird
         GridPane boundedMap = new GridPane();
@@ -125,9 +138,8 @@ public class App extends Application implements IPositionChangeObserver {
         this.mapsWrapper = mapsWrapper;
         mapsWrapper.getChildren().addAll(boundedMap, unboundedMap);
 
-
         // running
-        startSimulationEngine(false);
+        startSimulationEngine(true);
 //        startSimulationEngine(false);
 
         // running engine
@@ -225,7 +237,18 @@ public class App extends Application implements IPositionChangeObserver {
                 Vector2d position = new Vector2d(i, j);
                 VBox vBox;
                 IMapElement object = engine.map.objectAt(position);
+                if (map.isOccupiedByAnimal(position)) {
+                    Animal animalToFollow = map.animalAt(position);
+
+                }
                 vBox = MapElement.draw(object);
+
+
+                if (map.isOccupiedByAnimal(position)) {
+                    Animal animalToFollow = map.animalAt(position);
+                    // following animal
+                    vBox.setOnMouseClicked((e) -> animalInfo(animalToFollow,map.boundedMap));
+                }
                 // checking if is on desert position;
                 if (position.follows(jungleLowerLeft) && position.precedes(jungleUpperRight)) {
                     vBox.setStyle("-fx-background-color: rgb(14, 102, 13);");
@@ -234,6 +257,82 @@ public class App extends Application implements IPositionChangeObserver {
                 pane.add(vBox, i, 1 + upperRight.getY() - j, 1, 1);
             }
         }
+    }
+
+
+    private void animalInfo(Animal animal, boolean boundedMap) {
+        boolean flag = false;
+        Stage animalWindow = new Stage();
+        VBox allAnimalInfo = new VBox();
+        // condition Engine Thread suspended
+        if ((!boundedMapEngineON) && boundedMap) {
+            flag = true;
+            if (boundedMap) {
+                animalWindow.setTitle("Bounded Map Animal");
+            } else {
+                animalWindow.setTitle("Unbounded Map Animal");
+            }
+            // starting to follow animal
+            this.boundedMapAnimalToFollow = animal;
+            this.boundedMapAnimalInfo = allAnimalInfo;
+
+        } else if (!(boundedMapEngineON) && (!boundedMap)) {
+            flag = true;
+            if (boundedMap) {
+                animalWindow.setTitle("Bounded Map Animal");
+            } else {
+                animalWindow.setTitle("Unbounded Map Animal");
+            }
+            // starting to follow animal
+            this.unboundedMapAnimalToFollow = animal;
+            this.unboundedMapAnimalInfo = allAnimalInfo;
+        }
+
+        if (flag) {
+            updateAnimalFollowingScene(allAnimalInfo, animal);
+            StackPane stackPane = new StackPane();
+            stackPane.getChildren().addAll(allAnimalInfo);
+            Scene animalScene = new Scene(stackPane, 500, 300);
+            animalWindow.setScene(animalScene);
+            animalWindow.show();
+        }
+    }
+
+    public void updateAnimalFollowingScene(VBox allAnimalInfo, Animal animal){
+        allAnimalInfo.getChildren().clear();
+        // animal genotype
+        HBox animalGenotype = new HBox();
+        Label labelGenotype = new Label("Animal genotype: ");
+        String AnimalGenotypeString = "";
+        for (int g : animal.genes.getGenes()) {
+            AnimalGenotypeString += String.valueOf(g) + " ";
+        }
+        Label labelGenotypeValue = new Label(AnimalGenotypeString);
+        animalGenotype.setAlignment(Pos.CENTER);
+        animalGenotype.getChildren().addAll(labelGenotype,labelGenotypeValue);
+
+        // animal children number
+        HBox animalChildren = new HBox();
+        Label labelChildren = new Label("Animal number of children: ");
+        Label labelChildrenValue = new Label(String.valueOf(animal.numberOfChildren));
+        animalChildren.setAlignment(Pos.CENTER);
+        animalChildren.getChildren().addAll(labelChildren,labelChildrenValue);
+
+
+        // animal age of death
+        HBox animalDeath = new HBox();
+        Label labelDeath = new Label("Animal death age: ");
+        Label labelDeathValue = new Label();
+        if (animal.deathDate == -1){
+            labelDeathValue.setText("Still alive");
+        }
+        else {
+            labelDeathValue.setText(String.valueOf(animal.deathDate));
+        }
+        animalDeath.setAlignment(Pos.CENTER);
+        animalDeath.getChildren().addAll(labelDeath,labelDeathValue);
+
+        allAnimalInfo.getChildren().addAll(animalGenotype,animalChildren,animalDeath);
     }
 
 
@@ -279,13 +378,14 @@ public class App extends Application implements IPositionChangeObserver {
             this.engine = new SimulationEngine(this);
             Thread boundedMapEngineThread = new Thread(engine);
             this.boundedMapEngineThread = boundedMapEngineThread;
-            boundedMapEngineButton.setOnAction(e -> boundedMapToggleEngineThread());
+
+            boundedMapEngineButton.setOnMouseClicked(e -> boundedMapToggleEngineThread());
             boundedMapEngineThread.start();
         } else {
             this.engine = new SimulationEngine(this);
             Thread unboundedMapEngineThread = new Thread(engine);
             this.unboundedMapEngineThread = unboundedMapEngineThread;
-            unboundedMapEngineButton.setOnAction(e -> unboundedMapToggleEngineThread());
+            unboundedMapEngineButton.setOnMouseClicked(e -> unboundedMapToggleEngineThread());
             unboundedMapEngineThread.start();
         }
     }
@@ -306,8 +406,17 @@ public class App extends Application implements IPositionChangeObserver {
             updateMap(map);
             lineChartUpdate(map);
             additionalInfoUpdate(map);
-
+            if (map.boundedMap) {
+                // checking if App is following animal
+                if ( boundedMapAnimalToFollow != null){
+                    updateAnimalFollowingScene(this.boundedMapAnimalInfo,this.boundedMapAnimalToFollow);
+                }
+            }
+            else {
+                if (unboundedMapAnimalToFollow != null) {
+                    updateAnimalFollowingScene(this.unboundedMapAnimalInfo,this.unboundedMapAnimalToFollow);
+                }
+            }
         });
     }
-
 }
