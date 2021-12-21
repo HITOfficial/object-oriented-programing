@@ -15,7 +15,7 @@ public class SavannaMap implements IWorldMap {
     private final Vector2d jungleLowerLeft;
     private final Vector2d jungleUpperRight;
 
-    public final boolean boundedMap = true;
+    public final boolean boundedMap = false;
     public final int ageCost = 5;
     public final int startEnergy = 100;
     public final int minReproductionEnergy = 20;
@@ -30,6 +30,8 @@ public class SavannaMap implements IWorldMap {
     public int AVGEnergyOfAliveAnimals = 0;
     public int AVGLengthOfLifeAnimals = 0;
     public int AVGNumberOfChildrenAnimals = 0;
+
+    public int magicReproductionLeft = 3;
 
 
     public LinkedHashMap<Vector2d, Grass> grass = new LinkedHashMap<>();
@@ -115,7 +117,15 @@ public class SavannaMap implements IWorldMap {
 
         moveAllAnimals();
         eatGrass();
-        reproduction();
+
+        // magic reproduction
+        if (magicReproductionLeft > 0 && animalsCounter <= 5) {
+            magicReproduction();
+        }
+//        else {
+            reproduction();
+//        }
+
         updateAgeCounter();
 
         calculateDominatingGenotype();
@@ -212,10 +222,37 @@ public class SavannaMap implements IWorldMap {
             }
         }
         for (Animal animal : animalsToBorn) {
-            animals.get(animal.position).add(animal);
+            addAnimal(animal.position,animal);
             newAnimalUpdateCounter();
             newAnimalDominant(animal);
         }
+    }
+
+    public void magicReproduction() {
+        LinkedList<Animal> animalsToBorn = new LinkedList<>();
+        for (Vector2d position : animals.keySet()) {
+            for (Animal animal : animals.get(position)) {
+                // animal on new unoccupied by another animal place
+                int newAnimalPossibilities = (int) (upperRight.getX() - lowerLeft.getX() + 1) * (upperRight.getX() - lowerLeft.getX() + 1) - animalsCounter;
+                while (newAnimalPossibilities > 0) {
+                    int x = (int) (Math.random() * (upperRight.getX() - lowerLeft.getX() + 1)) + lowerLeft.getX();
+                    int y = (int) (Math.random() * (upperRight.getY() - lowerLeft.getY() + 1)) + lowerLeft.getY();
+                    Vector2d newAnimalPosition = new Vector2d(x, y);
+                    if (!isOccupiedByAnimal(newAnimalPosition)) {
+                        Animal newAnimal = animal.magicReproduction(newAnimalPosition, ageCounter);
+                        animalsToBorn.add(newAnimal);
+                        break;
+                    }
+                    newAnimalPossibilities -= 1;
+                }
+            }
+        }
+        for (Animal animal : animalsToBorn) {
+            addAnimal(animal.position,animal);
+            newAnimalUpdateCounter();
+            newAnimalDominant(animal);
+        }
+        magicReproductionLeft -= 1;
     }
 
     public LinkedList<Animal> reproductionAnimals(Vector2d position) {
@@ -382,8 +419,7 @@ public class SavannaMap implements IWorldMap {
         }
         if (tmpMax > 0) {
             dominant = result;
-        }
-        else {
+        } else {
             dominant = "no animals left";
         }
     }
@@ -398,8 +434,7 @@ public class SavannaMap implements IWorldMap {
         }
         if (animalsCounter > 0) {
             AVGEnergyOfAliveAnimals = energy / animalsCounter;
-        }
-        else {
+        } else {
             AVGEnergyOfAliveAnimals = 0;
         }
     }
@@ -425,8 +460,7 @@ public class SavannaMap implements IWorldMap {
         }
         if (animalsCounter > 0) {
             AVGNumberOfChildrenAnimals = children / animalsCounter;
-        }
-        else {
+        } else {
             AVGNumberOfChildrenAnimals = 0;
         }
     }
@@ -440,8 +474,7 @@ public class SavannaMap implements IWorldMap {
     public Animal animalAt(Vector2d position) {
         if (isOccupiedByAnimal(position)) {
             return animals.get(position).get(0);
-        }
-        else {
+        } else {
             return null;
         }
     }

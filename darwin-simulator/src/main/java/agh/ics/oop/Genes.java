@@ -1,6 +1,7 @@
 package agh.ics.oop;
 
 
+import java.util.Arrays;
 import java.util.LinkedList;
 
 public class Genes {
@@ -13,6 +14,11 @@ public class Genes {
     // new animal on game start
     public Genes() {
         randomGenes();
+        findDominant();
+    }
+    // genses from magic reproduction
+    public Genes(int[] genes) {
+        this.genes = Arrays.copyOf(genes,32);
         findDominant();
     }
 

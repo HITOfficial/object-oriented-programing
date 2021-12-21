@@ -99,20 +99,17 @@ public class App extends Application implements IPositionChangeObserver {
 
         if (boundedMapEngineON) {
             boundedMapEngineThread.resume();
-            System.out.println("bounded ON");
         } else {
             boundedMapEngineThread.suspend();
-            System.out.println("bounded Off");
         }
     }
 
     public void unboundedMapToggleEngineThread() {
         unboundedMapEngineON = !unboundedMapEngineON;
-        System.out.println("unbounded ON");
-
         if (unboundedMapEngineON) {
+            unboundedMapEngineThread.resume();
         } else {
-            unboundedMapEngineThread.checkAccess();
+            unboundedMapEngineThread.suspend();
         }
     }
 
@@ -139,7 +136,7 @@ public class App extends Application implements IPositionChangeObserver {
         mapsWrapper.getChildren().addAll(boundedMap, unboundedMap);
 
         // running
-        startSimulationEngine(true);
+        startSimulationEngine(false);
 //        startSimulationEngine(false);
 
         // running engine
@@ -243,7 +240,6 @@ public class App extends Application implements IPositionChangeObserver {
                 }
                 vBox = MapElement.draw(object);
 
-
                 if (map.isOccupiedByAnimal(position)) {
                     Animal animalToFollow = map.animalAt(position);
                     // following animal
@@ -276,7 +272,7 @@ public class App extends Application implements IPositionChangeObserver {
             this.boundedMapAnimalToFollow = animal;
             this.boundedMapAnimalInfo = allAnimalInfo;
 
-        } else if (!(boundedMapEngineON) && (!boundedMap)) {
+        } else if ((!unboundedMapEngineON) && (!boundedMap)) {
             flag = true;
             if (boundedMap) {
                 animalWindow.setTitle("Bounded Map Animal");
@@ -289,10 +285,11 @@ public class App extends Application implements IPositionChangeObserver {
         }
 
         if (flag) {
+            allAnimalInfo.setAlignment(Pos.CENTER);
             updateAnimalFollowingScene(allAnimalInfo, animal);
             StackPane stackPane = new StackPane();
             stackPane.getChildren().addAll(allAnimalInfo);
-            Scene animalScene = new Scene(stackPane, 500, 300);
+            Scene animalScene = new Scene(stackPane, 500, 100);
             animalWindow.setScene(animalScene);
             animalWindow.show();
         }

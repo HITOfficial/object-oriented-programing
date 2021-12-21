@@ -43,7 +43,7 @@ public class Animal implements IMapElement {
 //        this.newPosition = position;
     }
 
-    // animal from reproduction
+
     public Animal(IWorldMap map, Vector2d position, int startEnergy) {
         this(map, position);
         this.position = new Vector2d(position.getX(), position.getY());
@@ -51,9 +51,17 @@ public class Animal implements IMapElement {
         this.startEnergy = startEnergy;
     }
 
+    // animal from reproduction
     public Animal(IWorldMap map, Vector2d position, int startEnergy, int bornDate) {
         this(map, position, startEnergy);
         this.bornDate = bornDate;
+    }
+
+    // animal from magic reproduction
+    public Animal(IWorldMap map, Vector2d position, int startEnergy, int bornDate, int[] genes) {
+        this(map, position, startEnergy, bornDate);
+        // copy of parent genes
+        this.genes = new Genes(genes);
     }
 
     public boolean isDead() {
@@ -93,6 +101,14 @@ public class Animal implements IMapElement {
         this.numberOfChildren += 1;
         other.numberOfChildren += 1;
         return childAnimal;
+    }
+
+    public Animal magicReproduction(Vector2d position, int bornDate) {
+        int childEnergy = this.startEnergy;
+        this.updateEnergy((int) ((-1) * 0.25 * this.energy));
+        this.numberOfChildren += 1;
+        Animal childAnimal = new Animal(map, position, childEnergy, bornDate, this.genes.getGenes());
+        return  childAnimal;
     }
 
 
