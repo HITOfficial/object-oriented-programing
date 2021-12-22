@@ -11,8 +11,6 @@ public class SimulationEngine implements Runnable {
     public SimulationEngine(IPositionChangeObserver observer, boolean boundedMap, Vector2d lowerLeft, Vector2d upperRight, Vector2d jungleLowerLeft, Vector2d jungleUpperRight, int ageCost, int grassEnergy, int animalsNumber, int startEnergy) {
         this.observer = observer;
         this.map = new SavannaMap(observer,boundedMap,lowerLeft,upperRight,jungleLowerLeft,jungleUpperRight,ageCost,grassEnergy,animalsNumber,startEnergy);
-        System.out.println(jungleLowerLeft.toString());
-        System.out.println(jungleUpperRight.toString());
     }
 
 

@@ -33,6 +33,7 @@ import javafx.scene.control.TextField;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.Vector;
 
@@ -40,7 +41,6 @@ public class App extends Application implements IPositionChangeObserver {
     //    private Stage;
     private GridPane boundedMap;
     private GridPane unboundedMap;
-    private SimulationEngine engine;
 
     // map properties
     public Vector2d lowerLeft;
@@ -70,8 +70,6 @@ public class App extends Application implements IPositionChangeObserver {
     private XYChart.Series dataSeriesBoundedMapAVGEnergy;
     private XYChart.Series dataSeriesBoundedMapAVGChildren;
 
-    private VBox root;
-    private VBox mapsWrapper;
     private VBox additionalInfoWrapper;
 
     private HBox boundedMapGenotypeDominantWrapper;
@@ -83,11 +81,11 @@ public class App extends Application implements IPositionChangeObserver {
     private HBox unboundedMapActualAgeWrapper;
 
     private HBox ToggleEnginesWrapper;
-    private Button boundedMapEngine;
-    private Button unboundedMapEngine;
 
     private Label boundedMapActualAge;
     private Label unboundedMapActualAge;
+    private Label boundedMapMagicReproductionsLeft;
+    private Label unboundedMapMagicReproductionsLeft;
 
     private Thread boundedMapEngineThread;
     private boolean boundedMapEngineON = true;
@@ -102,6 +100,8 @@ public class App extends Application implements IPositionChangeObserver {
 
     public Animal unboundedMapAnimalToFollow = null;
     public VBox unboundedMapAnimalInfo = null;
+
+    public Button exitAndSaveDataButton;
 
 
     public void boundedMapToggleEngineThread() {
@@ -204,11 +204,11 @@ public class App extends Application implements IPositionChangeObserver {
         this.upperRight = new Vector2d(width, height);
 
         // jungle map center 1/2 difference X -> left, right, bottom up 1/2 difference Y
-        int jungleHalfX = (int) Math.round((double) (width/2) *  (double) jungleRatio) / 2;
-        int jungleHalfY = (int) Math.round((double) (height/2) *  (double) jungleRatio) / 2;
+        int jungleHalfX = (int) Math.round((double) (width / 2) * (double) jungleRatio) / 2;
+        int jungleHalfY = (int) Math.round((double) (height / 2) * (double) jungleRatio) / 2;
 
-        this.jungleLowerLeft = new Vector2d((width/2) - jungleHalfX, (height/2) - jungleHalfY);
-        this.jungleUpperRight = new Vector2d((width/2) + jungleHalfX, (height/2) + jungleHalfY);
+        this.jungleLowerLeft = new Vector2d((width / 2) - jungleHalfX, (height / 2) - jungleHalfY);
+        this.jungleUpperRight = new Vector2d((width / 2) + jungleHalfX, (height / 2) + jungleHalfY);
         this.ageCost = ageCost;
         this.grassEnergy = grassEnergy;
         this.animalsNumber = animals;
@@ -230,12 +230,11 @@ public class App extends Application implements IPositionChangeObserver {
         this.infoContainer = infoContainer;
 
         VBox root = new VBox();
-        this.root = root;
 
         // lineChart
         createLineChart();
 
-        // total age dominant labels with info
+        // total age dominant, magic reproductions left- labels with info
         constructInfo();
 
         // bounded map gird
@@ -245,43 +244,38 @@ public class App extends Application implements IPositionChangeObserver {
         GridPane unboundedMap = new GridPane();
         this.unboundedMap = unboundedMap;
 
+        Label boundedMapLabel = new Label("BOUNDED MAP");
+        Label unboundedMapLabel = new Label("UNBOUNDED MAP");
+
         VBox mapsWrapper = new VBox();
-        this.mapsWrapper = mapsWrapper;
-        mapsWrapper.setBackground(new Background(new BackgroundFill(Paint.valueOf("rgb(0,0,0)"), CornerRadii.EMPTY, Insets.EMPTY)));
-        mapsWrapper.getChildren().addAll(boundedMap, unboundedMap);
+        mapsWrapper.setAlignment(Pos.CENTER);
+        mapsWrapper.setSpacing(5);
+        mapsWrapper.getChildren().addAll(boundedMapLabel, boundedMap, unboundedMapLabel, unboundedMap);
 
-        // bounded map simulation engine
 
+        // running engine
         startSimulationEngine(false);
         startSimulationEngine(true);
 
-        // running engine
-        stage.setTitle("Evolution Simulator");
-        mapsWrapper.setStyle("-fx-background-color: rgb(10, 10, 10);");
-        mapsWrapper.setAlignment(Pos.CENTER);
-        mapsWrapper.setSpacing(10);
-
-
 
         // main scene
-        Scene scene = new Scene(root, Math.min(1200,width*21), 300+(2*height*10)+30);
+        Scene scene = new Scene(root, Math.min(1200, width * 21), 300 + (2 * height * 10) + 70);
 
-
+        // maps resolution
         boundedMap.setBackground(new Background(new BackgroundFill(Paint.valueOf("rgb(250,250,210)"), CornerRadii.EMPTY, Insets.EMPTY)));
-        boundedMap.setMinWidth(width*10);
-        boundedMap.setMinHeight(height*10);
-        boundedMap.setMaxHeight(height*10+10);
-        boundedMap.setMaxWidth(width*10);
-
+        boundedMap.setMinWidth(width * 10);
+        boundedMap.setMinHeight(height * 10);
+        boundedMap.setMaxHeight(height * 10 + 10);
+        boundedMap.setMaxWidth(width * 10 + 10);
 
         unboundedMap.setBackground(new Background(new BackgroundFill(Paint.valueOf("rgb(250,250,210)"), CornerRadii.EMPTY, Insets.EMPTY)));
-        unboundedMap.setMinWidth(width*10);
-        unboundedMap.setMinHeight(height*10);
-        unboundedMap.setMaxHeight(height*10+10);
-        unboundedMap.setMaxWidth(width*10);
-
-
+        unboundedMap.setMinWidth(width * 10);
+        unboundedMap.setMinHeight(height * 10);
+        unboundedMap.setMaxHeight(height * 10 + 10);
+        unboundedMap.setMaxWidth(width * 10 + 10);
         root.getChildren().addAll(infoContainer, mapsWrapper);
+
+        stage.setTitle("Evolution Simulator");
         stage.setScene(scene);
     }
 
@@ -358,11 +352,7 @@ public class App extends Application implements IPositionChangeObserver {
             for (int j = lowerLeft.getY(); j <= upperRight.getY(); j++) {
                 Vector2d position = new Vector2d(i, j);
                 VBox vBox;
-                IMapElement object = engine.map.objectAt(position);
-                if (map.isOccupiedByAnimal(position)) {
-                    Animal animalToFollow = map.animalAt(position);
-
-                }
+                IMapElement object = map.objectAt(position);
                 vBox = MapElement.draw(object);
 
                 if (map.isOccupiedByAnimal(position)) {
@@ -393,7 +383,8 @@ public class App extends Application implements IPositionChangeObserver {
             this.boundedMapAnimalToFollow = animal;
             this.boundedMapAnimalInfo = allAnimalInfo;
 
-        } else if ((!unboundedMapEngineON) && (!boundedMap)) {
+        }
+        if ((!unboundedMapEngineON) && (!boundedMap)) {
             flag = true;
             animalWindow.setTitle("Unbounded Map Animal");
             // starting to follow animal
@@ -402,9 +393,6 @@ public class App extends Application implements IPositionChangeObserver {
         }
 
         if (flag) {
-            if (boundedMap) {
-                System.out.println(boundedMap);
-            }
             allAnimalInfo.setAlignment(Pos.CENTER);
             updateAnimalFollowingScene(allAnimalInfo, animal);
             StackPane stackPane = new StackPane();
@@ -422,7 +410,7 @@ public class App extends Application implements IPositionChangeObserver {
         Label labelGenotype = new Label("Animal genotype: ");
         String AnimalGenotypeString = "";
         for (int g : animal.genes.getGenes()) {
-            AnimalGenotypeString += String.valueOf(g) + " ";
+            AnimalGenotypeString += g + " ";
         }
         Label labelGenotypeValue = new Label(AnimalGenotypeString);
         animalGenotype.setAlignment(Pos.CENTER);
@@ -467,25 +455,35 @@ public class App extends Application implements IPositionChangeObserver {
         Label boundedDominantLabel = new Label("Bounded Map Dominant: ");
         this.boundedMapGenotypeDominant = new Label();
         boundedMapGenotypeDominant.setText("");
+        HBox boundedMapMagicReproductionsLeftWrapper = new HBox();
+        Label boundedMapMagicReproductionsLeftLabel = new Label("Bounded Map Magic Reproductions Left: ");
+        this.boundedMapMagicReproductionsLeft = new Label();
 
         boundedMapActualAgeWrapper.getChildren().addAll(boundedMapActualAgeLabel, boundedMapActualAge);
         boundedMapGenotypeDominantWrapper.getChildren().addAll(boundedDominantLabel, boundedMapGenotypeDominant);
+        boundedMapMagicReproductionsLeftWrapper.getChildren().addAll(boundedMapMagicReproductionsLeftLabel, boundedMapMagicReproductionsLeft);
 
         this.unboundedMapActualAgeWrapper = new HBox();
         Label unboundedMapActualAgeLabel = new Label("Unbounded Map Actual Age: ");
         this.unboundedMapActualAge = new Label("");
         this.unboundedMapGenotypeDominantWrapper = new HBox();
         Label unboundedDominantLabel = new Label("Unbounded Map Dominant: ");
-        this.unboundedMapGenotypeDominant = new Label();
-        unboundedMapGenotypeDominant.setText("");
+        this.unboundedMapGenotypeDominant = new Label("");
+        HBox unboundedMapMagicReproductionsLeftWrapper = new HBox();
+        Label unboundedMapMagicReproductionsLeftLabel = new Label("Unbounded Map Magic Reproductions Left: ");
+        this.unboundedMapMagicReproductionsLeft = new Label("");
 
         unboundedMapActualAgeWrapper.getChildren().addAll(unboundedMapActualAgeLabel, unboundedMapActualAge);
         unboundedMapGenotypeDominantWrapper.getChildren().addAll(unboundedDominantLabel, unboundedMapGenotypeDominant);
+        unboundedMapMagicReproductionsLeftWrapper.getChildren().addAll(unboundedMapMagicReproductionsLeftLabel, unboundedMapMagicReproductionsLeft);
 
+
+        this.exitAndSaveDataButton = new Button("Exit And Save Data");
+        exitAndSaveDataButton.setOnAction(e -> exitAndSaveSimulationData());
 
         additionalInfoWrapper.setAlignment(Pos.CENTER);
-        additionalInfoWrapper.setSpacing(10);
-        additionalInfoWrapper.getChildren().addAll(boundedMapActualAgeWrapper, boundedMapGenotypeDominantWrapper, unboundedMapActualAgeWrapper, unboundedMapGenotypeDominantWrapper, ToggleEnginesWrapper);
+        additionalInfoWrapper.setSpacing(20);
+        additionalInfoWrapper.getChildren().addAll(boundedMapActualAgeWrapper, boundedMapGenotypeDominantWrapper, boundedMapMagicReproductionsLeftWrapper, unboundedMapActualAgeWrapper, unboundedMapGenotypeDominantWrapper, unboundedMapMagicReproductionsLeftWrapper, ToggleEnginesWrapper, exitAndSaveDataButton);
         infoContainer.getChildren().add(additionalInfoWrapper);
 
 
@@ -493,14 +491,14 @@ public class App extends Application implements IPositionChangeObserver {
 
     public void startSimulationEngine(boolean bounded) {
         if (bounded) {
-            engine = new SimulationEngine(this, bounded, lowerLeft, upperRight, jungleLowerLeft, jungleUpperRight, ageCost, grassEnergy, animalsNumber, startEnergy);
+            SimulationEngine engine = new SimulationEngine(this, bounded, lowerLeft, upperRight, jungleLowerLeft, jungleUpperRight, ageCost, grassEnergy, animalsNumber, startEnergy);
             Thread boundedMapEngineThread = new Thread(engine);
             this.boundedMapEngineThread = boundedMapEngineThread;
 
             boundedMapEngineButton.setOnMouseClicked(e -> boundedMapToggleEngineThread());
             boundedMapEngineThread.start();
         } else {
-            engine = new SimulationEngine(this, bounded, lowerLeft, upperRight, jungleLowerLeft, jungleUpperRight, ageCost, grassEnergy, animalsNumber, startEnergy);
+            SimulationEngine engine = new SimulationEngine(this, bounded, lowerLeft, upperRight, jungleLowerLeft, jungleUpperRight, ageCost, grassEnergy, animalsNumber, startEnergy);
             Thread unboundedMapEngineThread = new Thread(engine);
             this.unboundedMapEngineThread = unboundedMapEngineThread;
             unboundedMapEngineButton.setOnMouseClicked(e -> unboundedMapToggleEngineThread());
@@ -512,9 +510,12 @@ public class App extends Application implements IPositionChangeObserver {
         if (map.boundedMap) {
             boundedMapGenotypeDominant.setText(map.dominant);
             boundedMapActualAge.setText(String.valueOf(map.ageCounter));
+            boundedMapMagicReproductionsLeft.setText(String.valueOf(map.magicReproductionLeft));
         } else {
             unboundedMapGenotypeDominant.setText(map.dominant);
             unboundedMapActualAge.setText(String.valueOf(map.ageCounter));
+            unboundedMapMagicReproductionsLeft.setText(String.valueOf(map.magicReproductionLeft));
+
         }
     }
 
@@ -535,5 +536,94 @@ public class App extends Application implements IPositionChangeObserver {
                 }
             }
         });
+    }
+
+
+    private void saveToCSV(String path, XYChart.Series animalDataSeries, XYChart.Series grassDataSeries, XYChart.Series avgEnergyDataSeries, XYChart.Series avgLiveLengthDataSeries, XYChart.Series avgChildrenDataSeries) {
+        try (PrintWriter writer = new PrintWriter(path)) {
+            StringBuilder dataBuilder = new StringBuilder();
+            String separator = ";";
+            String newLine = "\n";
+
+            dataBuilder.append("date");
+            dataBuilder.append(separator);
+            dataBuilder.append("animals");
+            dataBuilder.append(separator);
+            dataBuilder.append("grass");
+            dataBuilder.append(separator);
+            dataBuilder.append("avg energy");
+            dataBuilder.append(separator);
+            dataBuilder.append("avg life");
+            dataBuilder.append(separator);
+            dataBuilder.append("avg children");
+            dataBuilder.append(newLine);
+
+            int animalsCounter = 0;
+            int grassCounter = 0;
+            int avgEnergyCounter = 0;
+            int avgLiveCounter = 0;
+            int avgChildrenCounter = 0;
+
+            int lastBoundedId = dataSeriesBoundedMapAnimal.getData().size();
+
+            for (int i = 0; i < lastBoundedId; i++) {
+                // single Age data
+                XYChart.Data animals = (XYChart.Data) animalDataSeries.getData().get(i);
+                XYChart.Data grass = (XYChart.Data) grassDataSeries.getData().get(i);
+                XYChart.Data avgEnergy = (XYChart.Data) avgEnergyDataSeries.getData().get(i);
+                XYChart.Data avgLive = (XYChart.Data) avgLiveLengthDataSeries.getData().get(i);
+                XYChart.Data avgChildren = (XYChart.Data) avgChildrenDataSeries.getData().get(i);
+
+                animalsCounter += (int) animals.getYValue();
+                grassCounter += (int) grass.getYValue();
+                avgEnergyCounter += (int) avgEnergy.getYValue();
+                avgLiveCounter += (int) avgLive.getYValue();
+                avgChildrenCounter += (int) avgChildren.getYValue();
+
+                dataBuilder.append(i);
+                dataBuilder.append(separator);
+                dataBuilder.append(animals.getYValue());
+                dataBuilder.append(separator);
+                dataBuilder.append(grass.getYValue());
+                dataBuilder.append(separator);
+                dataBuilder.append(avgEnergy.getYValue());
+                dataBuilder.append(separator);
+                dataBuilder.append(avgLive.getYValue());
+                dataBuilder.append(separator);
+                dataBuilder.append(avgChildren.getYValue());
+                dataBuilder.append(newLine);
+
+            }
+            // avg data
+            dataBuilder.append(newLine);
+            dataBuilder.append("avg");
+            dataBuilder.append(separator);
+            dataBuilder.append((double) animalsCounter / (double) lastBoundedId);
+            dataBuilder.append(separator);
+            dataBuilder.append((double) grassCounter / (double) lastBoundedId);
+            dataBuilder.append(separator);
+            dataBuilder.append((double) avgEnergyCounter / (double) lastBoundedId);
+            dataBuilder.append(separator);
+            dataBuilder.append((double) avgLiveCounter / (double) lastBoundedId);
+            dataBuilder.append(separator);
+            dataBuilder.append((double) avgChildrenCounter / (double) lastBoundedId);
+            dataBuilder.append(newLine);
+            writer.write(dataBuilder.toString());
+
+        } catch (FileNotFoundException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void exitAndSaveSimulationData() {
+        String boundedMapCSVPath = "src/main/resources/boundedMapSimulationData.csv";
+        String unboundedMapCSVPath = "src/main/resources/unboundedMapSimulationData.csv";
+
+        // bounded map data from simulation to CSV
+        saveToCSV(boundedMapCSVPath, dataSeriesBoundedMapAnimal, dataSeriesBoundedMapGrass, dataSeriesBoundedMapAVGEnergy, dataSeriesBoundedMapAVGLifeLength, dataSeriesBoundedMapAVGChildren);
+        // unbounded map data from simulation to CSV
+        saveToCSV(unboundedMapCSVPath, dataSeriesUnboundedMapAnimal, dataSeriesUnboundedMapGrass, dataSeriesUnboundedMapAVGEnergy, dataSeriesUnboundedMapAVGLifeLength, dataSeriesUnboundedMapAVGChildren);
+
+        Platform.exit();
     }
 }

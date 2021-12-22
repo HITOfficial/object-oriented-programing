@@ -1,19 +1,16 @@
 package agh.ics.oop;
 
-//import agh.ics.oop.gui.App;
 
 import agh.ics.oop.gui.IMapElement;
 
 import java.util.*;
 
-// becouse I don't know any sorted linked lists, and TreeSet cannot have duplicates so complexity to find all animals with same Energy == O(N)
-
 
 public class SavannaMap implements IWorldMap {
-    private Vector2d lowerLeft;
-    private Vector2d upperRight;
-    private Vector2d jungleLowerLeft;
-    private Vector2d jungleUpperRight;
+    private final Vector2d lowerLeft;
+    private final Vector2d upperRight;
+    private final Vector2d jungleLowerLeft;
+    private final Vector2d jungleUpperRight;
     public boolean boundedMap = false;
     public int ageCost = 5;
     public int startEnergy = 100;
@@ -25,9 +22,9 @@ public class SavannaMap implements IWorldMap {
     public int ageCounter = -1;
     public int[] dominantsNumber = new int[8];
     public String dominant = "";
-    private IPositionChangeObserver observer;
+    private final IPositionChangeObserver observer;
 
-    public LinkedList<Animal> deadAnimalsList = new LinkedList<Animal>();
+    public LinkedList<Animal> deadAnimalsList = new LinkedList<>();
     public int AVGEnergyOfAliveAnimals = 0;
     public int AVGLengthOfLifeAnimals = 0;
     public int AVGNumberOfChildrenAnimals = 0;
@@ -68,13 +65,13 @@ public class SavannaMap implements IWorldMap {
         this.ageCost = ageCost;
         this.grassEnergy = grassEnergy;
         this.startEnergy = startEnergy;
-        this.minReproductionEnergy = startEnergy/2;
+        this.minReproductionEnergy = startEnergy / 2;
         // insterting random animals into map
-        for (int i=0;i< animalsNumber; i++){
+        for (int i = 0; i < animalsNumber; i++) {
             int x = (int) (Math.random() * (upperRight.getX() - lowerLeft.getX() + 1)) + lowerLeft.getX();
             int y = (int) (Math.random() * (upperRight.getY() - lowerLeft.getY() + 1)) + lowerLeft.getY();
-            Vector2d position = new Vector2d(x,y);
-            Animal animal = new Animal(this,position, startEnergy);
+            Vector2d position = new Vector2d(x, y);
+            Animal animal = new Animal(this, position, startEnergy);
             addAnimal(position, animal);
             newAnimalUpdateCounter();
             newAnimalDominant(animal);
@@ -108,7 +105,6 @@ public class SavannaMap implements IWorldMap {
 
     // complexity O(3n)
     public LinkedList<Animal> top2EnergyAnimals(Vector2d position) {
-        LinkedList<Animal> tmpLinkedList = new LinkedList<>();
         int top1Energy = 0;
         // top1
         for (Animal animal : animals.get(position)) {
@@ -154,13 +150,6 @@ public class SavannaMap implements IWorldMap {
         this.observer.positionChanged(this);
     }
 
-
-    public void addAnimals(LinkedList<Animal> animalsList) {
-        for (Animal animal : animalsList) {
-            addAnimal(animal.position, animal);
-        }
-    }
-
     public void addAnimal(Vector2d position, Animal animal) {
         if (animals.get(position) == null) {
             animals.put(position, new LinkedList<>());
@@ -196,7 +185,7 @@ public class SavannaMap implements IWorldMap {
         }
 
         // desert possibilities -> map all possibilities without jungle coordinates
-        int desertPossibilities = (int) (upperRight.getX() - lowerLeft.getX() + 1) * (upperRight.getX() - lowerLeft.getX() + 1) - junglePossibilitiesCopy;
+        int desertPossibilities = (upperRight.getX() - lowerLeft.getX() + 1) * (upperRight.getX() - lowerLeft.getX() + 1) - junglePossibilitiesCopy;
         while (desertPossibilities > 0) {
             int x = (int) (Math.random() * (upperRight.getX() - lowerLeft.getX() + 1)) + lowerLeft.getX();
             int y = (int) (Math.random() * (upperRight.getY() - lowerLeft.getY() + 1)) + lowerLeft.getY();
@@ -230,7 +219,7 @@ public class SavannaMap implements IWorldMap {
         for (Vector2d position : animals.keySet()) {
             LinkedList<Animal> animalsList = reproductionAnimals(position);
             if (animalsList.size() >= 2) {
-                animalsList = nRandomAnimals(animalsList, 2);
+                nRandomAnimals(animalsList, 2);
                 // more than one animal with top energy -> taking randomly two from the size
                 if (animalsList.get(1).energy >= minReproductionEnergy && animalsList.get(0).energy >= minReproductionEnergy) {
                     Animal newAnimal = animalsList.get(0).reproduction(animalsList.get(1), ageCounter);
@@ -250,7 +239,7 @@ public class SavannaMap implements IWorldMap {
         for (Vector2d position : animals.keySet()) {
             for (Animal animal : animals.get(position)) {
                 // animal on new unoccupied by another animal place
-                int newAnimalPossibilities = (int) (upperRight.getX() - lowerLeft.getX() + 1) * (upperRight.getX() - lowerLeft.getX() + 1) - animalsCounter;
+                int newAnimalPossibilities = (upperRight.getX() - lowerLeft.getX() + 1) * (upperRight.getX() - lowerLeft.getX() + 1) - animalsCounter;
                 while (newAnimalPossibilities > 0) {
                     int x = (int) (Math.random() * (upperRight.getX() - lowerLeft.getX() + 1)) + lowerLeft.getX();
                     int y = (int) (Math.random() * (upperRight.getY() - lowerLeft.getY() + 1)) + lowerLeft.getY();
@@ -431,7 +420,7 @@ public class SavannaMap implements IWorldMap {
         String result = "";
         for (int i = 0; i < dominantsNumber.length; i++) {
             if (dominantsNumber[i] == tmpMax) {
-                result += String.valueOf(i) + " ";
+                result += i + " ";
             }
         }
         if (tmpMax > 0) {

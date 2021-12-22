@@ -2,15 +2,12 @@ package agh.ics.oop;
 
 
 import agh.ics.oop.gui.IMapElement;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
 
-import java.awt.*;
-
 public class Grass implements IMapElement {
     private Vector2d position;
-    private int energy;
+    private final int energy;
 
     public Grass() {
         position = new Vector2d(10,10);

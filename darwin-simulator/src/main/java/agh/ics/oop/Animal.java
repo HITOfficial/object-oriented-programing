@@ -1,12 +1,9 @@
 package agh.ics.oop;
 
 import agh.ics.oop.gui.IMapElement;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
 
-import java.awt.*;
-import java.util.ArrayList;
 import java.util.Objects;
 
 public class Animal implements IMapElement {
@@ -15,7 +12,6 @@ public class Animal implements IMapElement {
     public IWorldMap map;
     public int energy;
     public int startEnergy;
-    public ArrayList<IPositionChangeObserver> observerList = new ArrayList<>();
     public int bornDate;
     public int deathDate;
     public int numberOfChildren;
@@ -82,16 +78,6 @@ public class Animal implements IMapElement {
         return counter == 0 || counter == 4;
     }
 
-//    public void move() {
-//        Vector2d newPosition = position.add(direction.toUnitVector());
-//
-//        if (map.changePosition(newPosition, this)) {
-//            for (IPositionChangeObserver observer : observerList) {
-//                observer.positionChanged();
-//            }
-//        }
-//    }
-
     public Animal reproduction(Animal other, int bornDate) {
         int childEnergy = (int) (0.25 * this.energy) + (int) (0.25 * other.energy);
         this.updateEnergy((int) ((-1) * 0.25 * this.energy));
@@ -108,7 +94,7 @@ public class Animal implements IMapElement {
         this.updateEnergy((int) ((-1) * 0.25 * this.energy));
         this.numberOfChildren += 1;
         Animal childAnimal = new Animal(map, position, childEnergy, bornDate, this.genes.getGenes());
-        return  childAnimal;
+        return childAnimal;
     }
 
 

@@ -5,11 +5,10 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 public class Genes {
-    private int size = 32;
+    private final int size = 32;
     private int[] genes = new int[size];
-    private int minGene = 0;
-    private int maxGene = 7;
-    private LinkedList<Integer> genotypeDominant = new LinkedList<>();
+    private final int maxGene = 7;
+    private final LinkedList<Integer> genotypeDominant = new LinkedList<>();
 
     // new animal on game start
     public Genes() {
@@ -34,7 +33,7 @@ public class Genes {
         // genotype left from parent1 , right from parent2
         if (side == 1) {
             for (int i = 0; i < p1Genes; i++) {
-                // removing reference
+                // for sure removing reference
                 genes[currGenesSize] = p1[i] + 0;
                 currGenesSize += 1;
             }
@@ -44,7 +43,7 @@ public class Genes {
             }
         } else {
             for (int i = 0; i < p2Genes; i++) {
-                // removing reference
+                // for sure removing reference
                 genes[currGenesSize] = p2[i] + 0;
                 currGenesSize += 1;
             }
@@ -58,6 +57,7 @@ public class Genes {
 
     private void randomGenes() {
         for (int i = 0; i < size; i++) {
+            int minGene = 0;
             genes[i] = minGene + (int) (Math.random() * (maxGene + 1));
         }
     }
