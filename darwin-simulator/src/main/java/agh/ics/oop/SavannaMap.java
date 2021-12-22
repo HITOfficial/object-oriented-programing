@@ -135,9 +135,9 @@ public class SavannaMap implements IWorldMap {
         if (magicReproductionLeft > 0 && animalsCounter <= 5) {
             magicReproduction();
         }
-//        else {
+        else {
         reproduction();
-//        }
+        }
 
         updateAgeCounter();
 

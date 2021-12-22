@@ -16,7 +16,7 @@ public class SimulationEngine implements Runnable {
 
     @Override
     public void run() {
-        for (int i = 0; i < 10000; i++) {
+        while (true) {
             map.nextAge();
             try {
                 Thread.sleep(200);
