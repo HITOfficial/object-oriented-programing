@@ -1,5 +1,5 @@
 package agh.ics.oop;
-
+// czemu to jest schowane w jakimś podkatalogu
 import agh.ics.oop.gui.IMapElement;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
@@ -7,6 +7,7 @@ import javafx.scene.paint.Paint;
 import java.util.Objects;
 
 public class Animal implements IMapElement {
+    // masa pól publicznych; żeby chociaż część była finalna
     public Genes genes;
     public MapDirection direction;
     public IWorldMap map;
@@ -18,13 +19,13 @@ public class Animal implements IMapElement {
     protected Vector2d position;
     protected Vector2d newPosition;
 
-    public Animal() {
+    public Animal() {   // czy zwierzę może nie dostać mapy?
         numberOfChildren = 0;
         bornDate = 0;
         deathDate = -1;
         direction = MapDirection.NORTH;
         position = new Vector2d(2, 2);
-        genes = new Genes();
+        genes = new Genes();    // a gdzie energy, startEnergy?
     }
 
     public Animal(IWorldMap map) {
@@ -68,7 +69,7 @@ public class Animal implements IMapElement {
         this.energy += val;
     }
 
-    public boolean rotateAndMove() {
+    public boolean rotateAndMove() {    // ta metoda nie rusza zwierzęcia
         int counter = 0;
         for (int i = 0; i <= genes.randomRotate(); i++) {
             this.direction = this.direction.next();
@@ -80,9 +81,9 @@ public class Animal implements IMapElement {
 
     public Animal reproduction(Animal other, int bornDate) {
         int childEnergy = (int) (0.25 * this.energy) + (int) (0.25 * other.energy);
-        this.updateEnergy((int) ((-1) * 0.25 * this.energy));
+        this.updateEnergy((int) (-0.25 * this.energy));
         other.updateEnergy((int) ((-1) * 0.25 * other.energy));
-        Animal childAnimal = new Animal(map, new Vector2d(other.position.getX(), other.position.getY()), childEnergy, bornDate);
+        Animal childAnimal = new Animal(map, new Vector2d(other.position.getX(), other.position.getY()), childEnergy, bornDate);    // po co tworzyć nowy wektor, skoro jest niemodyfikowalny?
         childAnimal.genes = new Genes(this.genes.getGenes(), other.genes.getGenes(), this.energy, other.energy);
         this.numberOfChildren += 1;
         other.numberOfChildren += 1;
@@ -131,7 +132,7 @@ public class Animal implements IMapElement {
         return Objects.hash(this.position.getX(), this.position.getY(), this.genes);
     }
 
-    public Paint getColor() {
+    public Paint getColor() {   // lepiej to przerzucić do GUI
         if (energy < 0.2 * startEnergy) return Paint.valueOf("rgb(255,248,220)");
         else if (energy < 0.5 * startEnergy) return Paint.valueOf("rgb(255,235,205)");
         else if (energy < 0.8 * startEnergy) return Paint.valueOf("rgb(255,228,196)");

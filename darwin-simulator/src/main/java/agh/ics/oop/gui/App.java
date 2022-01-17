@@ -37,7 +37,7 @@ import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.Vector;
 
-public class App extends Application implements IPositionChangeObserver {
+public class App extends Application implements IPositionChangeObserver {   // za duża ta klasa
     //    private Stage;
     private GridPane boundedMap;
     private GridPane unboundedMap;

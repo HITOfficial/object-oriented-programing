@@ -11,7 +11,7 @@ public class SavannaMap implements IWorldMap {
     private final Vector2d upperRight;
     private final Vector2d jungleLowerLeft;
     private final Vector2d jungleUpperRight;
-    public boolean boundedMap = false;
+    public boolean boundedMap = false;  // public?
     public int ageCost = 5;
     public int startEnergy = 100;
     public int minReproductionEnergy;
@@ -25,7 +25,7 @@ public class SavannaMap implements IWorldMap {
     private final IPositionChangeObserver observer;
 
     public LinkedList<Animal> deadAnimalsList = new LinkedList<>();
-    public int AVGEnergyOfAliveAnimals = 0;
+    public int AVGEnergyOfAliveAnimals = 0; // czy to jest zadanie dla mapy?
     public int AVGLengthOfLifeAnimals = 0;
     public int AVGNumberOfChildrenAnimals = 0;
 
@@ -78,7 +78,7 @@ public class SavannaMap implements IWorldMap {
         }
     }
 
-    public LinkedList<Animal> allAnimalsWithGivenEnergy(int energy, Vector2d position) {
+    private LinkedList<Animal> allAnimalsWithGivenEnergy(int energy, Vector2d position) {
         LinkedList<Animal> tmpLinkedList = new LinkedList<>();
         for (Animal animal : animals.get(position)) {
             if (animal.energy == energy) {
@@ -104,7 +104,7 @@ public class SavannaMap implements IWorldMap {
     }
 
     // complexity O(3n)
-    public LinkedList<Animal> top2EnergyAnimals(Vector2d position) {
+    public LinkedList<Animal> top2EnergyAnimals(Vector2d position) {    // niejasna nazwa
         int top1Energy = 0;
         // top1
         for (Animal animal : animals.get(position)) {
@@ -124,7 +124,7 @@ public class SavannaMap implements IWorldMap {
     }
 
 
-    public void nextAge() {
+    public void nextAge() { // czy to nie powinno być raczej w SimulationEngine?
         removeDeadAnimals();
         spawnGrass();
 
@@ -134,13 +134,12 @@ public class SavannaMap implements IWorldMap {
         // magic reproduction
         if (magicReproductionLeft > 0 && animalsCounter <= 5) {
             magicReproduction();
-        }
-        else {
-        reproduction();
+        } else {
+            reproduction();
         }
 
         updateAgeCounter();
-
+        // czy na pewno mapa się powinna tym zajmować?
         calculateDominatingGenotype();
         calculateAVGEnergyOfAliveAnimals();
         calculateAVGLengthOfLiveAnimals();

@@ -17,7 +17,7 @@ public class Vector2d {
     }
 
     public Integer getX(){
-        return this.x;
+        return this.x;  // po co, skoro te pola są publiczne?
     }
 
     public Integer getY(){

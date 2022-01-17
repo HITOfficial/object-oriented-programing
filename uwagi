@@ -1,0 +1,8 @@
+Nie da się uruchomić: brak "id 'application'" oraz głównej klasy
+Nie zapisuje CSV
+Program się nie wyłącza po zamknięciu okna
+Brak dominującego genotypu
+Brak informacji w GUI o magicznym skopiowaniu zwierząt
+Brak liczby dalszych potomków
+"Exit And Save Data" rzuca IndexOutOfBoundsException
+Można śledzić dwa zwierzęta, tylko że jak wszystkie zwierzęta na mapie wymarły, to oba śledzone są "Still alive"
