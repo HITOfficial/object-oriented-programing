@@ -1,6 +1,7 @@
 # Darwin-Simulator
-## Darwin-Simulator is a simulation of evolution of animals in the jungle. It is a project for the Object Oriented Programming course at AGH-UST.
+### Darwin-Simulator is a simulation of evolution of animals in the jungle. It is a project for the Object Oriented Programming course at AGH-UST.
 
+### Move to [darwin-simulator](darwin-simulator)
 
 ### Simulation Map
 ![img_2.png](images%2Fimg_2.png)
